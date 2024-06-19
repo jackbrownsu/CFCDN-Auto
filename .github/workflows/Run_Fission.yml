@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.MY_PAT_SECRET }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
