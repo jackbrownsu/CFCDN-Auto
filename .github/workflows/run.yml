@@ -13,6 +13,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
+        repository: yutian81/CFCDN-Auto
         token: ${{ secrets.MY_PAT_SECRET }}
 
     - name: Set up Python
