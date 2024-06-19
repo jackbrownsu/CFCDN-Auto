@@ -1,4 +1,4 @@
-name: 执行 CloudflareCDN 裂变脚本
+name: Run CloudflareCDN
 
 on:
   # schedule:
