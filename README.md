@@ -2,6 +2,9 @@
 [snowfal1](https://github.com/snowfal1/CloudflareCDNFission)
 
 ## 使用
+<details>
+  <summary>点击展开</summary>
+  
 - 在 `Fission_ip.txt` 中填入至少一个反代IP
   
 - Settings: `Actions` --> `General` --> `Read and write permissions`，保存
@@ -15,5 +18,5 @@
   - 示例：`https://github.yutian81.top/yutian81/CFCDN-Auto/main/Fission_ip2cc.txt`
     
 - \.github\workflows\run.yml文件中可以设置自动运行：`# schedule`和`# - cron: '0 0 * * 3'`去掉`#`号，修改计划
-  
 
+</details>
