@@ -27,6 +27,7 @@ def fetch_data(url):
             soup = BeautifulSoup(response.text, 'html.parser')
             if "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
                 # 解析 https://monitor.gacjie.cn/page/cloudflare/ipv4.html 网站数据
+                print(f"Fetching data from {url}")
                 rows = soup.find_all('tr')
                 for row in rows:
                     cols = row.find_all('td')
@@ -39,6 +40,7 @@ def fetch_data(url):
             
             elif "stock.hostmonit.com/CloudFlareYes" in url:
                 # 解析 https://stock.hostmonit.com/CloudFlareYes 网站数据
+                print(f"Fetching data from {url}")
                 data = json.loads(response.text)
                 for entry in data:
                     ip = entry['IP']
@@ -49,6 +51,7 @@ def fetch_data(url):
             
             elif "cf.090227.xyz" in url or "345673.xyz" in url:
                 # 解析 https://cf.090227.xyz 和 https://345673.xyz 网站数据
+                print(f"Fetching data from {url}")
                 rows = soup.find_all('tr')
                 for row in rows:
                     cols = row.find_all('td')
