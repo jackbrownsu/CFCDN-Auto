@@ -2,7 +2,7 @@ name: Update IP List
 
 on:
   schedule:
-    #- cron: '0 */12 * * *'  # 每12小时运行一次
+    - cron: '0 */12 * * *'  # 每12小时运行一次
 
 jobs:
   update_ip_list:
