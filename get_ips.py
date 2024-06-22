@@ -1,10 +1,9 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 import re
-import os
-import json
 
-# 获取IP地址、运营商线路和往返延迟数据
+# 函数：从网站获取IP地址数据
 def fetch_ips(url):
     try:
         headers = {
@@ -66,47 +65,58 @@ def fetch_ips(url):
         return ip_data
 
     except requests.exceptions.RequestException as e:
-        print(f"Failed to fetch data from {url}: {e}")
+        print(f"从 {url} 获取数据失败: {e}")
         return []
 
-# 获取延迟低于200ms的IP地址，且排除移动运营商
-def filter_ips(ip_data, max_latency=200):
+# 函数：根据延迟和运营商过滤IP地址
+def filter_ips(ip_data, max_latency=200, allowed_isps=['电信', '联通']):
     valid_ips = []
     for isp, ip, latency_str in ip_data:
-        if isp in ['电信', '联通']:
-            latency = re.search(r'\d+', latency_str)
-            if latency and int(latency.group()) < max_latency:
-                valid_ips.append((ip, isp, f"{latency.group()}ms"))
+        latency = re.search(r'\d+', latency_str)
+        if isp in allowed_isps and latency and int(latency.group()) < max_latency:
+            valid_ips.append((ip, isp, f"{latency.group()}ms"))
     return valid_ips
 
-# 写入到ips.txt文件
-def write_to_file(filtered_ips):
-    with open('ips.txt', 'w') as f:
+# 函数：更新Cloudflare DNS记录
+def update_cloudflare_dns(filtered_ips, cf_api_email, cf_api_key, cf_zone_id):
+    try:
         for ip, isp, latency in filtered_ips:
-            f.write(f"{ip}#{isp}-{latency}\n")
+            if isp == '电信':
+                subdomain = 'ct'
+            elif isp == '联通':
+                subdomain = 'cu'
+            else:
+                continue
+            
+            # 构建DNS记录
+            dns_record = {
+                'type': 'A',
+                'name': f'{subdomain}.yutian.us.kg',
+                'content': ip,
+                'ttl': 120,  # TTL，单位秒
+                'proxied': False  # 是否通过Cloudflare代理
+            }
 
-# 解析到Cloudflare指定域名DNS记录
-def update_cloudflare_dns(filtered_ips):
-    cf_domain_mapping = {
-        '电信': 'ct.yutian.us.kg',
-        '联通': 'cu.yutian.us.kg'
-    }
-    
-    for ip, isp, latency in filtered_ips:
-        if isp in cf_domain_mapping:
-            domain = cf_domain_mapping[isp]
-            try:
-                # 删除原有的DNS记录（假设通过API或其他方式进行删除）
-                print(f"Deleting existing DNS records for {domain}")
-                
-                # 添加新的DNS记录
-                print(f"Adding DNS record: {ip} -> {domain}")
-                # 这里应该是实际添加DNS记录的代码，可以使用Cloudflare的API进行添加操作
-                # 示例：requests.post('Cloudflare API URL', json={'ip': ip, 'domain': domain})
-                
-            except Exception as e:
-                print(f"Failed to update DNS for {domain}: {e}")
+            # 构建API端点
+            api_url = f'https://api.cloudflare.com/client/v4/zones/{cf_zone_id}/dns_records'
 
+            # 包含认证详细信息的标头
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Auth-Email': cf_api_email,
+                'X-Auth-Key': cf_api_key,
+            }
+
+            # 发送POST请求以添加DNS记录
+            response = requests.post(api_url, headers=headers, json=dns_record)
+            response.raise_for_status()
+
+            print(f"添加DNS记录成功: {ip} -> {dns_record['name']}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"更新Cloudflare DNS记录失败: {e}")
+
+# 主函数：协调整个过程
 def main():
     urls = [
         "https://monitor.gacjie.cn/page/cloudflare/ipv4.html",
@@ -114,31 +124,27 @@ def main():
         "https://345673.xyz/",
         "https://stock.hostmonit.com/CloudFlareYes"
     ]
+
     all_ip_data = []
     for url in urls:
         ip_data = fetch_ips(url)
         if ip_data:
             all_ip_data.extend(ip_data)
         else:
-            print(f"Skipping {url} due to fetch failure")
-
-    # 调试信息
-    print("All IP data fetched:")
-    for ip_info in all_ip_data:
-        print(ip_info)
+            print(f"跳过 {url}，获取数据失败")
 
     filtered_ips = filter_ips(all_ip_data)
 
-    # 调试信息
-    print("Filtered IPs:")
-    for ip_info in filtered_ips:
-        print(ip_info)
+    # 将筛选后的IP写入到ips.txt文件中
+    with open('ips.txt', 'w') as f:
+        for ip, isp, latency in filtered_ips:
+            f.write(f"{ip}#{isp}-{latency}\n")
 
-    # 写入到ips.txt文件
-    write_to_file(filtered_ips)
-
-    # 更新Cloudflare的DNS记录
-    update_cloudflare_dns(filtered_ips)
+    # 更新Cloudflare DNS记录
+    cf_api_email = os.getenv('CF_API_EMAIL')
+    cf_api_key = os.getenv('CF_API_KEY')
+    cf_zone_id = os.getenv('CF_ZONE_ID')
+    update_cloudflare_dns(filtered_ips, cf_api_email, cf_api_key, cf_zone_id)
 
 if __name__ == "__main__":
     main()
