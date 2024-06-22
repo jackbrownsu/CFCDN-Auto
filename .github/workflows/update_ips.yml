@@ -33,4 +33,4 @@ jobs:
         git config --local user.name "GitHub Action"
         git add ips.txt
         git commit -m "update ip list $(date "+%Y/%m/%d %H:%M:%S")"
-        git push origin HEAD:main
+        git push
