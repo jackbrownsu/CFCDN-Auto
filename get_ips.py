@@ -1,81 +1,76 @@
 import requests
+from bs4 import BeautifulSoup
 import re
 import os
 import json
-from bs4 import BeautifulSoup
 
-# 爬取网站获取IP地址、延迟和运营商信息
+# 获取IP地址、运营商线路和延迟数据
 def fetch_ips(url):
-    response = requests.get(url)
-    # 确保响应成功
-    if response.status_code != 200:
-        print(f"Failed to fetch data from {url}")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        ip_data = []
+
+        if "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
+            # IP：优选地址，运营商线路：线路名称，延迟数据：往返延迟
+            table = soup.find('table', class_='table')
+            if table:
+                rows = table.find_all('tr')
+                for row in rows:
+                    cols = row.find_all('td')
+                    if len(cols) >= 3:
+                        ip = cols[0].text.strip()
+                        isp = cols[1].text.strip()
+                        latency = cols[2].text.strip()
+                        ip_data.append((ip, isp, latency))
+
+        elif "cf.090227.xyz" in url:
+            # IP：IP，运营商线路：线路，延迟数据：平均延迟
+            rows = soup.find_all('tr')
+            for row in rows:
+                cols = row.find_all('td')
+                if len(cols) >= 3:
+                    ip = cols[0].text.strip()
+                    isp = cols[1].text.strip()
+                    latency = cols[2].text.strip()
+                    ip_data.append((ip, isp, latency))
+
+        elif "345673.xyz" in url:
+            # IP：优选地址，运营商线路：线路名称，延迟数据：平均延迟
+            rows = soup.find_all('tr')
+            for row in rows:
+                cols = row.find_all('td')
+                if len(cols) >= 3:
+                    ip = cols[0].text.strip()
+                    isp = cols[1].text.strip()
+                    latency = cols[2].text.strip()
+                    ip_data.append((ip, isp, latency))
+
+        elif "stock.hostmonit.com/CloudFlareYes" in url:
+            # IP：IP，运营商线路：Line，延迟数据：Latency
+            table = soup.find('table', class_='table')
+            if table:
+                rows = table.find_all('tr')
+                for row in rows:
+                    cols = row.find_all('td')
+                    if len(cols) >= 3:
+                        ip = cols[0].text.strip()
+                        isp = cols[1].text.strip()
+                        latency = cols[2].text.strip()
+                        ip_data.append((ip, isp, latency))
+
+        return ip_data
+
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch data from {url}: {e}")
         return []
 
-    # 使用BeautifulSoup解析HTML内容
-    soup = BeautifulSoup(response.text, 'html.parser')
-    ip_data = []
-
-    if "345673.xyz" in url:
-        # IP：优选地址，运营商线路：线路名称，延迟数据：平均延迟
-        rows = soup.find_all('tr')
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 3:
-                ip = cols[0].text.strip()
-                isp = cols[1].text.strip()
-                latency = cols[2].text.strip()
-                ip_data.append((ip, isp, latency))
-
-    elif "cf.090227.xyz" in url:
-        # IP：IP，运营商线路：线路，延迟数据：平均延迟
-        rows = soup.find_all('tr')
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 3:
-                ip = cols[0].text.strip()
-                isp = cols[1].text.strip()
-                latency = cols[2].text.strip()
-                ip_data.append((ip, isp, latency))
-
-    elif "stock.hostmonit.com/CloudFlareYes" in url:
-        # IP：IP，运营商线路：Line，延迟数据：Latency
-        rows = soup.find_all('tr')
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 3:
-                ip = cols[0].text.strip()
-                isp = cols[1].text.strip()
-                latency = cols[2].text.strip()
-                ip_data.append((ip, isp, latency))
-
-    elif "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
-        # IP：优选地址，运营商线路：线路名称，延迟数据：往返延迟
-        rows = soup.find_all('tr')
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 3:
-                ip = cols[0].text.strip()
-                isp = cols[1].text.strip()
-                latency = cols[2].text.strip()
-                ip_data.append((ip, isp, latency))
-
-    elif "example.com" in url:
-        # 示例：假设数据在json中
-        data = response.json()
-        for entry in data:
-            ip = entry['优选地址']
-            isp = entry['线路名称']
-            latency = entry['往返延迟']
-            ip_data.append((ip, isp, latency))
-
-    return ip_data
-
-# 获取延迟低于200ms的IP地址
+# 获取延迟低于200ms的IP地址，且排除移动运营商
 def filter_ips(ip_data, max_latency=200):
     valid_ips = []
     for ip, isp, latency_str in ip_data:
-        latency = int(latency_str.replace('ms', ''))
+        latency = int(re.search(r'\d+', latency_str).group())  # 提取数字部分作为延迟数值
         if latency < max_latency and isp in ['电信', '联通']:
             valid_ips.append((ip, isp, latency_str))
     return valid_ips
@@ -88,12 +83,16 @@ def delete_existing_dns_records(record_name, zone_id, api_key, api_email):
         'X-Auth-Key': api_key,
         'Content-Type': 'application/json',
     }
-    response = requests.get(url, headers=headers)
-    records = response.json()['result']
-    for record in records:
-        if record['name'] == record_name:
-            delete_url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record['id']}"
-            requests.delete(delete_url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        records = response.json()['result']
+        for record in records:
+            if record['name'] == record_name:
+                delete_url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record['id']}"
+                requests.delete(delete_url, headers=headers)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to delete DNS records for {record_name}: {e}")
 
 # 更新DNS记录
 def update_dns_record(ip, record_name, zone_id, api_key, api_email):
@@ -110,21 +109,29 @@ def update_dns_record(ip, record_name, zone_id, api_key, api_email):
         "ttl": 1,
         "proxied": False
     }
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    return response.json()
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to update DNS record for {record_name}: {e}")
+        return None
 
 def main():
     urls = [
-        "https://345673.xyz/",
-        "https://cf.090227.xyz/",
-        "https://stock.hostmonit.com/CloudFlareYes",
         "https://monitor.gacjie.cn/page/cloudflare/ipv4.html",
-        "https://example.com/"  # 替换为实际的第五个URL
+        "https://cf.090227.xyz/",
+        "https://345673.xyz/",
+        "https://stock.hostmonit.com/CloudFlareYes"
     ]
     all_ip_data = []
     for url in urls:
-        all_ip_data.extend(fetch_ips(url))
-    
+        ip_data = fetch_ips(url)
+        if ip_data:
+            all_ip_data.extend(ip_data)
+        else:
+            print(f"Skipping {url} due to fetch failure")
+
     # 调试信息
     print("All IP data fetched:")
     for ip_info in all_ip_data:
