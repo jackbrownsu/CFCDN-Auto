@@ -1,8 +1,9 @@
 name: Update IP List
 
 on:
-  schedule:
-    - cron: '0 */12 * * *'  # 每12小时运行一次
+  #schedule:
+  #   - cron: '0 0 * * 3'
+  workflow_dispatch:
 
 jobs:
   update_ip_list:
