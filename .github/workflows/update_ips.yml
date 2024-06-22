@@ -24,8 +24,8 @@ jobs:
 
     - name: Run Python script and update ips.txt
       run: |
-        python -c "import os; os.system('python get_ips.py')"
-        
+        python get_ips.py
+
     - name: Commit and push changes
       run: |
         git config --global user.name 'GitHub Actions'
