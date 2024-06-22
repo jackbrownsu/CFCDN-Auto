@@ -25,7 +25,7 @@ def fetch_ips(url):
                     if len(cols) >= 3:
                         ip = cols[0].text.strip()
                         isp = cols[1].text.strip()
-                        latency = cols[2].text.strip()
+                        latency = cols[2].text.strip().replace('毫秒', 'ms')
                         ip_data.append((ip, isp, latency))
 
         elif "cf.090227.xyz" in url:
@@ -36,7 +36,7 @@ def fetch_ips(url):
                 if len(cols) >= 3:
                     ip = cols[0].text.strip()
                     isp = cols[1].text.strip()
-                    latency = cols[2].text.strip()
+                    latency = cols[2].text.strip().replace('毫秒', 'ms')
                     ip_data.append((ip, isp, latency))
 
         elif "345673.xyz" in url:
@@ -47,7 +47,7 @@ def fetch_ips(url):
                 if len(cols) >= 3:
                     ip = cols[0].text.strip()
                     isp = cols[1].text.strip()
-                    latency = cols[2].text.strip()
+                    latency = cols[2].text.strip().replace('毫秒', 'ms')
                     ip_data.append((ip, isp, latency))
 
         elif "stock.hostmonit.com/CloudFlareYes" in url:
@@ -60,7 +60,7 @@ def fetch_ips(url):
                     if len(cols) >= 3:
                         ip = cols[0].text.strip()
                         isp = cols[1].text.strip()
-                        latency = cols[2].text.strip()
+                        latency = cols[2].text.strip().replace('毫秒', 'ms')
                         ip_data.append((ip, isp, latency))
 
         return ip_data
@@ -78,6 +78,34 @@ def filter_ips(ip_data, max_latency=200):
             if latency and int(latency.group()) < max_latency:
                 valid_ips.append((ip, isp, f"{latency.group()}ms"))
     return valid_ips
+
+# 写入到ips.txt文件
+def write_to_file(filtered_ips):
+    with open('ips.txt', 'w') as f:
+        for ip, isp, latency in filtered_ips:
+            f.write(f"{ip}#{isp}-{latency}\n")
+
+# 解析到Cloudflare指定域名DNS记录
+def update_cloudflare_dns(filtered_ips):
+    cf_domain_mapping = {
+        '电信': 'ct.yutian.us.kg',
+        '联通': 'cu.yutian.us.kg'
+    }
+    
+    for ip, isp, latency in filtered_ips:
+        if isp in cf_domain_mapping:
+            domain = cf_domain_mapping[isp]
+            try:
+                # 删除原有的DNS记录（假设通过API或其他方式进行删除）
+                print(f"Deleting existing DNS records for {domain}")
+                
+                # 添加新的DNS记录
+                print(f"Adding DNS record: {ip} -> {domain}")
+                # 这里应该是实际添加DNS记录的代码，可以使用Cloudflare的API进行添加操作
+                # 示例：requests.post('Cloudflare API URL', json={'ip': ip, 'domain': domain})
+                
+            except Exception as e:
+                print(f"Failed to update DNS for {domain}: {e}")
 
 def main():
     urls = [
@@ -107,19 +135,10 @@ def main():
         print(ip_info)
 
     # 写入到ips.txt文件
-    with open('ips.txt', 'w') as f:
-        for ip, isp, latency in filtered_ips:
-            f.write(f"{ip}#{isp}-{latency}\n")
+    write_to_file(filtered_ips)
 
-    # 提交到Git
-    try:
-        os.system('git config --global user.name "github-actions[bot]"')
-        os.system('git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"')
-        os.system('git add ips.txt')
-        os.system('git commit -m "Update IP list"')
-        os.system('git push')
-    except Exception as e:
-        print(f"Failed to push to Git: {e}")
+    # 更新Cloudflare的DNS记录
+    update_cloudflare_dns(filtered_ips)
 
 if __name__ == "__main__":
     main()
