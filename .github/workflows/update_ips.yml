@@ -2,7 +2,7 @@ name: Update IP List
 
 on:
   schedule:
-    - cron: '0 */12 * * *'  # 每12小时运行一次
+    #- cron: '0 */12 * * *'  # 每12小时运行一次
 
 jobs:
   update_ip_list:
@@ -28,8 +28,8 @@ jobs:
 
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@users.noreply.github.com'
         git add ips.txt
-        git commit -m "Update IP list on $(date "+%Y/%m/%d %H:%M:%S")"
+        git commit -m 'Update IP list [skip ci]'
         git push
