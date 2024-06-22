@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import json
 
 # 网站 URL 列表
 urls = [
@@ -24,7 +23,7 @@ def fetch_data(url):
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.content, 'html.parser')
             if "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
                 # 解析 https://monitor.gacjie.cn/page/cloudflare/ipv4.html 网站数据
                 print(f"Fetching data from {url}")
@@ -41,7 +40,7 @@ def fetch_data(url):
             elif "stock.hostmonit.com/CloudFlareYes" in url:
                 # 解析 https://stock.hostmonit.com/CloudFlareYes 网站数据
                 print(f"Fetching data from {url}")
-                data = json.loads(response.text)
+                data = response.json()
                 for entry in data:
                     ip = entry['IP']
                     isp = entry['Line']
