@@ -3,11 +3,15 @@ from bs4 import BeautifulSoup
 import re
 import os
 import json
+import time
 
 # 获取IP地址、运营商线路和延迟数据
 def fetch_ips(url):
     try:
-        response = requests.get(url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        }
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         ip_data = []
