@@ -2,11 +2,74 @@ import requests
 import re
 import os
 import json
+from bs4 import BeautifulSoup
 
 # 爬取网站获取IP地址、延迟和运营商信息
 def fetch_ips(url):
     response = requests.get(url)
-    return re.findall(r'(\d+\.\d+\.\d+\.\d+)\#(\w+)\-(\d+ms)', response.text)
+    # 确保响应成功
+    if response.status_code != 200:
+        print(f"Failed to fetch data from {url}")
+        return []
+
+    # 使用BeautifulSoup解析HTML内容
+    soup = BeautifulSoup(response.text, 'html.parser')
+    ip_data = []
+
+    if "345673.xyz" in url:
+        # IP：优选地址，运营商线路：线路名称，延迟数据：平均延迟
+        rows = soup.find_all('tr')
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) >= 3:
+                ip = cols[0].text.strip()
+                isp = cols[1].text.strip()
+                latency = cols[2].text.strip()
+                ip_data.append((ip, isp, latency))
+
+    elif "cf.090227.xyz" in url:
+        # IP：IP，运营商线路：线路，延迟数据：平均延迟
+        rows = soup.find_all('tr')
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) >= 3:
+                ip = cols[0].text.strip()
+                isp = cols[1].text.strip()
+                latency = cols[2].text.strip()
+                ip_data.append((ip, isp, latency))
+
+    elif "stock.hostmonit.com/CloudFlareYes" in url:
+        # IP：IP，运营商线路：Line，延迟数据：Latency
+        rows = soup.find_all('tr')
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) >= 3:
+                ip = cols[0].text.strip()
+                isp = cols[1].text.strip()
+                latency = cols[2].text.strip()
+                ip_data.append((ip, isp, latency))
+
+    elif "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
+        # IP：优选地址，运营商线路：线路名称，延迟数据：往返延迟
+        rows = soup.find_all('tr')
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) >= 3:
+                ip = cols[0].text.strip()
+                isp = cols[1].text.strip()
+                latency = cols[2].text.strip()
+                ip_data.append((ip, isp, latency))
+
+    elif "example.com" in url:
+        # 示例：假设数据在json中
+        data = response.json()
+        for entry in data:
+            ip = entry['优选地址']
+            isp = entry['线路名称']
+            latency = entry['往返延迟']
+            ip_data.append((ip, isp, latency))
+
+    return ip_data
 
 # 获取延迟低于200ms的IP地址
 def filter_ips(ip_data, max_latency=200):
@@ -55,13 +118,24 @@ def main():
         "https://345673.xyz/",
         "https://cf.090227.xyz/",
         "https://stock.hostmonit.com/CloudFlareYes",
-        "https://example.com/"  # 替换为实际的第四个URL
+        "https://monitor.gacjie.cn/page/cloudflare/ipv4.html",
+        "https://example.com/"  # 替换为实际的第五个URL
     ]
     all_ip_data = []
     for url in urls:
         all_ip_data.extend(fetch_ips(url))
     
+    # 调试信息
+    print("All IP data fetched:")
+    for ip_info in all_ip_data:
+        print(ip_info)
+
     filtered_ips = filter_ips(all_ip_data)
+
+    # 调试信息
+    print("Filtered IPs:")
+    for ip_info in filtered_ips:
+        print(ip_info)
 
     cf_api_key = os.getenv('CF_API_KEY')
     cf_api_email = os.getenv('CF_API_EMAIL')
