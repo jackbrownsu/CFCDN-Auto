@@ -1,0 +1,39 @@
+name: Update IPs
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # 每12小时运行一次
+  push:
+    branches:
+      - main
+
+jobs:
+  update_ips:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Run IP update script
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        CF_API_EMAIL: ${{ secrets.CF_API_EMAIL }}
+        CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+      run: python get_ips.py
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+        git add ips.txt
+        git commit -m 'Update IP list'
+        git push
