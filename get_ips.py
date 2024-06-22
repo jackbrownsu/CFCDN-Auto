@@ -25,7 +25,7 @@ def fetch_data(url):
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
-            if "monitor.gacjie.cn" in url:
+            if "monitor.gacjie.cn/page/cloudflare/ipv4.html" in url:
                 # 解析 https://monitor.gacjie.cn/page/cloudflare/ipv4.html 网站数据
                 rows = soup.find_all('tr')
                 for row in rows:
