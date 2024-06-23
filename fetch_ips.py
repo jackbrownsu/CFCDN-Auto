@@ -9,7 +9,7 @@ CF_API_EMAIL = os.getenv('CF_API_EMAIL')
 
 # 四个网址
 urls = [
-    "https://ip.164746.xyz/ipTop.html",
+    "https://addressesapi.090227.xyz/ip.164746.xyz",
     "https://addressesapi.090227.xyz/ct",
     "https://addressesapi.090227.xyz/CloudFlareYes",
     "https://ipdb.api.030101.xyz/?type=bestcf&country=true"
