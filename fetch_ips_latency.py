@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 import re
 
 # 配置多个网址
@@ -16,44 +17,42 @@ DELAY_THRESHOLD_MS = 200
 # 结果存储列表
 result_ips = set()
 
-# 正则表达式模式匹配
-ip_pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-line_pattern = re.compile(r'(线路名称|Line|线路).+?(\w+)')  # 匹配线路名称
-latency_pattern = re.compile(r'(平均延迟|往返延迟|Latency).+?(\d+)\s*(ms|毫秒)')  # 匹配延迟数据
-
 # 获取网页内容并筛选数据
 for url in urls:
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             content = response.text
+            soup = BeautifulSoup(content, 'html.parser')
             
-            # 匹配 IP 地址
-            ip_matches = ip_pattern.findall(content)
+            # 提取所有的 <th> 标签
+            th_tags = soup.find_all('th')
             
-            # 匹配线路名称
-            line_match = line_pattern.search(content)
-            if line_match:
-                line = line_match.group(2).strip()
-            else:
-                line = ""
+            # 初始化线路和延迟数据
+            line = ""
+            latency = ""
             
-            # 匹配延迟数据
-            latency_match = latency_pattern.search(content)
-            if latency_match:
-                latency = f"{latency_match.group(2)}{latency_match.group(3)}"
-            else:
-                latency = ""
-            
-            # 组装结果
-            for ip in ip_matches:
-                if line and latency:
-                    result_ips.add(f"{ip}#{line}-{latency}")
-                elif line:
-                    result_ips.add(f"{ip}#{line}")
-                else:
-                    result_ips.add(f"{ip}")
+            # 找到线路名称
+            for th in th_tags:
+                th_text = th.get_text(strip=True)
+                
+                # 匹配线路名称
+                if th_text in ['线路名称', '线路', 'Line']:
+                    line = th_text
+                
+                # 匹配延迟数据
+                elif th_text in ['平均延迟', '往返延迟', 'latency', '延迟']:
+                    latency_th = th.find_next_sibling('td')
+                    if latency_th:
+                        latency_text = latency_th.get_text(strip=True)
+                        # 匹配数字和可能的单位，统一为 ms
+                        match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
+                        if match:
+                            latency = f"{match.group(1)}ms"
                     
+                    # 根据 IP 地址设置结果
+                    for ip_match in re.finditer(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', content):
+                        result_ips.add(f"{ip_match.group()}#{line}-{latency}")
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
