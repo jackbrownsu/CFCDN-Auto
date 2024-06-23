@@ -39,8 +39,9 @@ processed_data = [
 with open("ips.txt", "w") as file:
     file.write("\n".join(processed_data))
 
-# 从处理后的数据中提取IPv4地址
-ipv4_addresses = [ip.split('#')[0] for ip in processed_data]
+# 从ips.txt文件中提取IPv4地址
+with open("ips.txt", "r") as file:
+    ipv4_addresses = [line.split('#')[0] for line in file if '#' in line]
 
 # 清空CF_DOMAIN_NAME的所有DNS记录
 def clear_dns_records():
@@ -60,9 +61,9 @@ def clear_dns_records():
             if delete_response.status_code == 200:
                 print(f"Successfully deleted DNS record: {record['id']}")
             else:
-                print(f"Failed to delete DNS record: {record['id']}, status code: {delete_response.status_code}")
+                print(f"Failed to delete DNS record: {record['id']}, status code: {delete_response.status_code}, response: {delete_response.text}")
     else:
-        print(f"Failed to fetch DNS records, status code: {response.status_code}")
+        print(f"Failed to fetch DNS records, status code: {response.status_code}, response: {response.text}")
 
 # 添加新的IPv4地址为DNS记录
 def add_dns_record(ip):
@@ -87,5 +88,11 @@ def add_dns_record(ip):
 
 # 执行清空和添加DNS记录的操作
 clear_dns_records()
+
+# 调试信息：打印所有需要添加的IP地址
+print("Adding the following IPs to DNS records:")
+for ip in ipv4_addresses:
+    print(ip)
+
 for ip in ipv4_addresses:
     add_dns_record(ip)
