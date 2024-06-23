@@ -35,12 +35,12 @@ processed_data = [
     for ip in unique_data
 ]
 
-# 将处理后的数据写入ips.txt文件
-with open("ips.txt", "w") as file:
+# 将处理后的数据写入api_ips.txt文件
+with open("api_ips.txt", "w") as file:
     file.write("\n".join(processed_data))
 
-# 从ips.txt文件中提取IPv4地址
-with open("ips.txt", "r") as file:
+# 从api_ips.txt文件中提取IPv4地址
+with open("api_ips.txt", "r") as file:
     ipv4_addresses = [line.split('#')[0] for line in file if '#' in line]
 
 # 清空CF_DOMAIN_NAME的所有DNS记录
