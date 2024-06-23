@@ -1,9 +1,9 @@
 name: API IPs
 
 on:
-  #schedule:
-    #- cron: '0 0/12 * * *' # 每12小时运行一次
-  workflow_dispatch: # 手动触发
+  schedule:
+    - cron: '0 0/12 * * *' # 每12小时运行一次
+  #workflow_dispatch: # 手动触发
 
 jobs:
   fetch-update-dns-and-repo:
