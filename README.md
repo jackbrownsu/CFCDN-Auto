@@ -41,12 +41,11 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 可以添加同类型的其他网页抓取更多数据，自行在`fetch_ips.py`文件的`urls`参数中添加，  
 但是必须注意：**网页内容必须是可以直接获取ip数据的直链API地址**，否则无法抓取数据。
 
-**现在，将你的`ips.txt`文件地址设置到cm大佬的的edge项目中的`ADDAPI`变量**  
+**现在，将你的`ips.txt`RAW文件地址设置到cm大佬的的edge项目中的`ADDAPI`变量**  
+  如果你创建的是私有库，请看这里：[如何获取私库文件的raw地址](https://github.com/cmliu/CF-Workers-Raw)
 
 **或者，将你已更新DNS的域名设置到cm大佬的的edge项目中的`ADD`变量，享受大佬们的成果吧**
 
 [CM项目地址](https://github.com/cmliu/edgetunnel)  
 
 [CM订阅器地址](https://github.com/cmliu/WorkerVless2sub)  
-
-[如何获取私库文件的raw地址](https://github.com/cmliu/CF-Workers-Raw)
