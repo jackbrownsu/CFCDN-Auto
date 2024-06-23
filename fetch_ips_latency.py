@@ -21,22 +21,6 @@ urls = [
     "https://345673.xyz"
 ]
 
-# 解析延迟数据的正则表达式
-latency_pattern = re.compile(r'(\d+(\.\d+)?)\s*(ms|毫秒)?')
-
-# 提取表格数据的函数
-def extract_table_data(url):
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            return soup
-        else:
-            print(f"Failed to fetch data from {url}. Status code: {response.status_code}")
-    except requests.RequestException as e:
-        print(f"Request failed for {url}: {e}")
-    return None
-
 # 处理每个网址的数据
 def process_site_data(url):
     soup = extract_table_data(url)
@@ -47,19 +31,19 @@ def process_site_data(url):
     if "cf.090227.xyz" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            line_name_elem = row.find('th', text=re.compile(r'线路|Line|线路名称'))
+            line_name_elem = row.find('th', string=re.compile(r'线路'))
             if line_name_elem:
                 line_name = line_name_elem.find_next('td').text.strip()
             else:
                 continue
             
-            ip_address_elem = row.find('th', text=re.compile(r'IP|IP地址|优选地址'))
+            ip_address_elem = row.find('th', string=re.compile(r'IP'))
             if ip_address_elem:
                 ip_address = ip_address_elem.find_next('td').text.strip()
             else:
                 continue
             
-            latency_elem = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency'))
+            latency_elem = row.find('th', string=re.compile(r'平均延迟'))
             if latency_elem:
                 latency_text = latency_elem.find_next('td').text.strip()
                 latency_match = latency_pattern.match(latency_text)
@@ -69,21 +53,21 @@ def process_site_data(url):
                     data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
 
     elif "stock.hostmonit.com" in url:
-        rows = soup.find_all('tr', class_=re.compile(r'el-table row'))
+        rows = soup.find_all('tr', class_=re.compile(r'el-table__row'))
         for row in rows:
-            line_name_elem = row.find('td', class_=re.compile(r'column 1|column_1'))
+            line_name_elem = row.find('td', class_=re.compile(r'column_1?'))
             if line_name_elem:
                 line_name = line_name_elem.text.strip()
             else:
                 continue
             
-            ip_address_elem = row.find('td', class_=re.compile(r'column 2|column_2'))
+            ip_address_elem = row.find('td', class_=re.compile(r'column_2?'))
             if ip_address_elem:
                 ip_address = ip_address_elem.text.strip()
             else:
                 continue
             
-            latency_elem = row.find('td', class_=re.compile(r'column 3|column_3'))
+            latency_elem = row.find('td', class_=re.compile(r'column_3?'))
             if latency_elem:
                 latency_text = latency_elem.text.strip()
                 latency_match = latency_pattern.match(latency_text)
@@ -93,32 +77,39 @@ def process_site_data(url):
                     data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
 
     elif "ip.164746.xyz" in url:
-        rows = soup.find_all('td')
-        for i in range(0, len(rows), 5):
-            ip_address = rows[i].find_next('a').text.strip()
-            latency_text = rows[i+4].text.strip()
-            latency_match = latency_pattern.match(latency_text)
-            if latency_match:
-                latency_value = latency_match.group(1)
-                latency_unit = 'ms'
-                data.append(f"{ip_address}-{latency_value}{latency_unit}")
+        rows = soup.find_all('tr')
+        for row in rows:
+            ip_address_elem = row.find('td', string=re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'))
+            if ip_address_elem:
+                ip_address = ip_address_elem.text.strip()
+            else:
+                continue
+            
+            latency_elem = row.find_all('td')[4]  # 第五列是延迟数据
+            if latency_elem:
+                latency_text = latency_elem.text.strip()
+                latency_match = latency_pattern.match(latency_text)
+                if latency_match:
+                    latency_value = latency_match.group(1)
+                    latency_unit = 'ms'
+                    data.append(f"{ip_address}-{latency_value}{latency_unit}")
     
     elif "monitor.gacjie.cn" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            line_name_elem = row.find('th', text=re.compile(r'线路|Line|线路名称'))
+            line_name_elem = row.find('td', string=re.compile(r'线路名称'))
             if line_name_elem:
                 line_name = line_name_elem.find_next('td').text.strip()
             else:
                 continue
             
-            ip_address_elem = row.find('th', text=re.compile(r'IP|IP地址|优选地址'))
+            ip_address_elem = row.find('td', string=re.compile(r'优选地址'))
             if ip_address_elem:
                 ip_address = ip_address_elem.find_next('td').text.strip()
             else:
                 continue
             
-            latency_elem = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency'))
+            latency_elem = row.find('td', string=re.compile(r'往返延迟'))
             if latency_elem:
                 latency_text = latency_elem.find_next('td').text.strip()
                 latency_match = latency_pattern.match(latency_text)
@@ -128,23 +119,23 @@ def process_site_data(url):
                     data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
     
     elif "345673.xyz" in url:
-        rows = soup.find_all('tr', class_=re.compile(r'line-cm|line-ct|line-cu'))
+        rows = soup.find_all('tr')
         for row in rows:
-            line_name_elem = row.find('td', class_=re.compile(r'column 1|column 1'))
+            line_name_elem = row.find('td', string=re.compile(r'线路名称'))
             if line_name_elem:
-                line_name = line_name_elem.text.strip()
+                line_name = line_name_elem.find_next('td').text.strip()
             else:
                 continue
             
-            ip_address_elem = row.find('td', class_=re.compile(r'column 2|column_2'))
+            ip_address_elem = row.find('td', string=re.compile(r'优选地址'))
             if ip_address_elem:
-                ip_address = ip_address_elem.text.strip()
+                ip_address = ip_address_elem.find_next('td').text.strip()
             else:
                 continue
             
-            latency_elem = row.find('td', class_=re.compile(r'column 4|column_4'))
+            latency_elem = row.find('td', string=re.compile(r'平均延迟'))
             if latency_elem:
-                latency_text = latency_elem.text.strip()
+                latency_text = latency_elem.find_next('td').text.strip()
                 latency_match = latency_pattern.match(latency_text)
                 if latency_match:
                     latency_value = latency_match.group(1)
