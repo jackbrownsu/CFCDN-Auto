@@ -170,6 +170,10 @@ def clear_dns_records():
 
 # 添加新的IPv4地址为DNS记录，在 add_dns_record 函数中添加调试输出
 def add_dns_record(ip):
+    # 重新获取 ipv4 地址
+    with open("site_ips.txt", "r") as file:
+        ipv4 = [line.split('#')[0] for line in file if '#' in line]
+
     print(f"Adding DNS record for IP: {ip}")
     url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records"
     headers = {
@@ -189,10 +193,6 @@ def add_dns_record(ip):
         print(f"Successfully created DNS record for IP: {ip}")
     else:
         print(f"Failed to create DNS record for IP: {ip}, status code: {response.status_code}, response: {response.text}")
-
-    # 重新获取 ipv4_addresses
-    with open("site_ips.txt", "r") as file:
-        ipv4 = [line.split('#')[0] for line in file if '#' in line]
 
 if __name__ == "__main__":
     main()
