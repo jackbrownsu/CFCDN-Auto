@@ -12,7 +12,7 @@ urls = [
 ]
 
 # 目标延迟阈值
-DELAY_THRESHOLD_MS = 200
+DELAY_THRESHOLD_MS = 100
 
 # 结果存储列表
 result_ips = set()
@@ -25,34 +25,47 @@ for url in urls:
             content = response.text
             soup = BeautifulSoup(content, 'html.parser')
             
-            # 提取所有的 <th> 标签
-            th_tags = soup.find_all('th')
-            
-            # 初始化线路和延迟数据
-            line = ""
-            latency = ""
-            
-            # 找到线路名称
-            for th in th_tags:
-                th_text = th.get_text(strip=True)
-                
-                # 匹配线路名称
-                if th_text in ['线路名称', '线路', 'Line']:
-                    line = th_text
-                
-                # 匹配延迟数据
-                elif th_text in ['平均延迟', '往返延迟', 'latency', '延迟']:
-                    latency_th = th.find_next_sibling('td')
-                    if latency_th:
-                        latency_text = latency_th.get_text(strip=True)
-                        # 匹配数字和可能的单位，统一为 ms
-                        match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
-                        if match:
-                            latency = f"{match.group(1)}ms"
+            # 查找所有表格行
+            rows = soup.find_all('tr')
+            for row in rows:
+                columns = row.find_all('th')
+                if len(columns) == 0:
+                    continue
+
+                # 初始化线路和延迟数据
+                line = ""
+                latency = ""
+                ip_address = ""
+
+                for th in columns:
+                    th_text = th.get_text(strip=True)
                     
-                    # 根据 IP 地址设置结果
-                    for ip_match in re.finditer(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', content):
-                        result_ips.add(f"{ip_match.group()}#{line}-{latency}")
+                    # 查找线路名称
+                    if th_text in ['线路名称', '线路', 'Line']:
+                        line_td = th.find_next('td')
+                        if line_td:
+                            line = line_td.get_text(strip=True)
+                    
+                    # 查找延迟数据
+                    if th_text in ['平均延迟', '往返延迟', 'latency', '延迟']:
+                        latency_td = th.find_next('td')
+                        if latency_td:
+                            latency_text = latency_td.get_text(strip=True)
+                            match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
+                            if match:
+                                latency = float(match.group(1))
+                                if match.group(3) == '毫秒':
+                                    latency = latency / 1  # 将毫秒转为ms
+
+                # 查找IP地址
+                for td in row.find_all('td'):
+                    ip_match = re.search(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', td.get_text(strip=True))
+                    if ip_match:
+                        ip_address = ip_match.group()
+
+                # 如果线路名称和延迟数据均匹配到，且延迟小于目标值，保存结果
+                if ip_address and latency and latency < DELAY_THRESHOLD_MS:
+                    result_ips.add(f"{ip_address}#{line}-{latency:.2f}ms")
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
