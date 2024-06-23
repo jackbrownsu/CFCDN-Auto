@@ -135,12 +135,15 @@ def main():
         for line in filtered_data:
             f.write(line + '\n')
 
+    # 执行清空DNS记录的操作
+    clear_dns_records()
+    
     # 从site_ips.txt文件中提取IPv4地址
     with open("site_ips.txt", "r") as file:
-        ipv4_addresses = [line.split('#')[0] for line in file if '#' in line]
+        ipv4 = [line.split('#')[0] for line in file if '#' in line]
 
     # 执行添加DNS记录的操作
-    for ip in ipv4_addresses:
+    for ip in ipv4:
         add_dns_record(ip)
 
 # 清空CF_DOMAIN_NAME的所有DNS记录
@@ -187,9 +190,13 @@ def add_dns_record(ip):
     else:
         print(f"Failed to create DNS record for IP: {ip}, status code: {response.status_code}, response: {response.text}")
 
+    # 重新获取 ipv4_addresses
+    with open("site_ips.txt", "r") as file:
+        ipv4 = [line.split('#')[0] for line in file if '#' in line]
+
     # 调试信息：打印所有需要添加的IP地址
     print("Adding the following IPs to DNS records:")
-    for ip in ipv4_addresses:
+    for ip in ipv4:
         print(ip)
 
 if __name__ == "__main__":
