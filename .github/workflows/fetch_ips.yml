@@ -1,4 +1,4 @@
-name: Fetch IPs and Update DNS
+name: Fetch IPs
 
 on:
   #schedule:
