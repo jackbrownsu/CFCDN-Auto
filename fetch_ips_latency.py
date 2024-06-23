@@ -14,8 +14,8 @@ urls = [
 # 目标延迟阈值
 DELAY_THRESHOLD_MS = 100
 
-# 结果存储列表
-result_ips = set()
+# 结果存储字典（用于去重）
+result_ips = {}
 
 # 获取网页内容并筛选数据
 for url in urls:
@@ -44,6 +44,27 @@ for url in urls:
                 continue
 
             # 遍历表格行
+            for row in soup.find_all('tr', class_=re.compile(r'line-cm|line-ct|line-cu')):
+                columns = row.find_all('td')
+                if len(columns) <= max(line_index, ip_index, latency_index):
+                    continue
+
+                # 提取线路名称、IP地址和延迟数据
+                line = columns[line_index].get_text(strip=True)
+                ip_address = columns[ip_index].get_text(strip=True)
+                latency_text = columns[latency_index].get_text(strip=True)
+
+                match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
+                if match:
+                    latency = float(match.group(1))
+                    if match.group(3) in ['毫秒', None]:
+                        latency = latency  # 保持毫秒不变
+
+                    # 仅保留延迟数据低于目标值的数据
+                    if latency < DELAY_THRESHOLD_MS and any(x in line for x in ['移动', '联通', '电信']):
+                        result_ips[ip_address] = f"{ip_address}#{line}-{latency:.2f}ms"
+
+            # 再次遍历所有行以处理没有特定class的行
             for row in soup.find_all('tr'):
                 columns = row.find_all('td')
                 if len(columns) <= max(line_index, ip_index, latency_index):
@@ -57,18 +78,18 @@ for url in urls:
                 match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
                 if match:
                     latency = float(match.group(1))
-                    if match.group(3) == '毫秒':
-                        latency = latency / 1  # 将毫秒转为ms
+                    if match.group(3) in ['毫秒', None]:
+                        latency = latency  # 保持毫秒不变
 
                     # 仅保留延迟数据低于目标值的数据
-                    if latency < DELAY_THRESHOLD_MS:
-                        result_ips.add(f"{ip_address}#{line}-{latency:.2f}ms")
+                    if latency < DELAY_THRESHOLD_MS and any(x in line for x in ['移动', '联通', '电信']):
+                        result_ips[ip_address] = f"{ip_address}#{line}-{latency:.2f}ms"
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
 # 将结果写入到txt文件中
 with open("ips_latency.txt", "w") as file:
-    for ip_line in result_ips:
+    for ip_line in result_ips.values():
         file.write(ip_line + "\n")
 
 print("数据已写入 ips_latency.txt 文件")
