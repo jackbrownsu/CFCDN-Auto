@@ -135,9 +135,6 @@ def main():
         for line in filtered_data:
             f.write(line + '\n')
 
-    # 执行清空DNS记录的操作
-    clear_dns_records()
-    
     # 从site_ips.txt文件中提取IPv4地址
     with open("site_ips.txt", "r") as file:
         ipv4_addresses = [line.split('#')[0] for line in file if '#' in line]
