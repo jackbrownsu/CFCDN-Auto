@@ -59,14 +59,26 @@ def process_site_data(url):
     elif "stock.hostmonit.com" in url:
         rows = soup.find_all('tr', class_=re.compile(r'el-table row'))
         for row in rows:
-            line_name = row.find('td', class_=re.compile(r'column 1|column_1')).text.strip()
-            ip_address = row.find('td', class_=re.compile(r'column 2|column_2')).text.strip()
-            latency_text = row.find('td', class_=re.compile(r'column 3|column_3')).text.strip()
-            latency_match = latency_pattern.match(latency_text)
-            if latency_match:
-                latency_value = latency_match.group(1)
-                latency_unit = 'ms'
-                data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
+            line_name_elem = row.find('td', class_=re.compile(r'column 1|column_1'))
+            if line_name_elem:
+                line_name = line_name_elem.text.strip()
+            else:
+                continue
+            
+            ip_address_elem = row.find('td', class_=re.compile(r'column 2|column_2'))
+            if ip_address_elem:
+                ip_address = ip_address_elem.text.strip()
+            else:
+                continue
+            
+            latency_elem = row.find('td', class_=re.compile(r'column 3|column_3'))
+            if latency_elem:
+                latency_text = latency_elem.text.strip()
+                latency_match = latency_pattern.match(latency_text)
+                if latency_match:
+                    latency_value = latency_match.group(1)
+                    latency_unit = 'ms'
+                    data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
 
     elif "ip.164746.xyz" in url:
         rows = soup.find_all('td')
@@ -95,13 +107,21 @@ def process_site_data(url):
         rows = soup.find_all('tr', class_=re.compile(r'line-cm|line-ct|line-cu'))
         for row in rows:
             line_name = row.find('td', class_=re.compile(r'column 1|column 1')).text.strip()
-            ip_address = row.find('td', class_=re.compile(r'column 2|column_2')).text.strip()
-            latency_text = row.find('td', class_=re.compile(r'column 4|column_4')).text.strip()
-            latency_match = latency_pattern.match(latency_text)
-            if latency_match:
-                latency_value = latency_match.group(1)
-                latency_unit = 'ms'
-                data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
+            
+            ip_address_elem = row.find('td', class_=re.compile(r'column 2|column_2'))
+            if ip_address_elem:
+                ip_address = ip_address_elem.text.strip()
+            else:
+                continue
+            
+            latency_elem = row.find('td', class_=re.compile(r'column 4|column_4'))
+            if latency_elem:
+                latency_text = latency_elem.text.strip()
+                latency_match = latency_pattern.match(latency_text)
+                if latency_match:
+                    latency_value = latency_match.group(1)
+                    latency_unit = 'ms'
+                    data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
 
     return data
 
@@ -119,9 +139,7 @@ def main():
     filtered_data = [line for line in unique_data if float(line.split('-')[-1].replace('ms', '')) < 100]
 
     # 写入到ips_latency.txt文件
-    with open('ips_latency.txt', 'w', encoding='utf-8') as f:
-        for line in filtered_data:
-            f.write(line + '\n')
+    with open('ips_latency.txt', 'w', encoding='utf-
 
 if __name__ == "__main__":
     main()
