@@ -27,12 +27,10 @@ for url in urls:
         if response.status_code == 200:
             content = response.text
             matches = re.findall(pattern, content)
-            for match in matches:
-                if int(match) < DELAY_THRESHOLD_MS:
-                    # 提取IP地址
-                    ips = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', content)
-                    for ip in ips:
-                        result_ips.add(f"{ip}#线路-{url}")
+            ips = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', content)
+            for i in range(len(matches)):
+                if int(matches[i]) < DELAY_THRESHOLD_MS:
+                    result_ips.add(f"{ips[i]}#{url}")
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
