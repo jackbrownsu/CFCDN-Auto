@@ -90,9 +90,9 @@ with open("api_ips.txt", "r") as file:
 #clear_dns_records()
 
 # 调试信息：打印所有需要添加的IP地址
-print("Adding the following IPs to DNS records:")
-for ip in ipv4_addresses:
-    print(ip)
+#print("Adding the following IPs to DNS records:")
+#for ip in ipv4_addresses:
+#    print(ip)
 
 #for ip in ipv4_addresses:
 #    add_dns_record(ip)
