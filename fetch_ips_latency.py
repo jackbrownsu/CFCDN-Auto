@@ -1,6 +1,5 @@
 import requests
 import re
-import os
 
 # 配置多个网址
 urls = [
@@ -18,7 +17,7 @@ DELAY_THRESHOLD_MS = 200
 result_ips = set()
 
 # 正则表达式模式匹配
-pattern = re.compile(r'(?:平均延迟|往返延迟|Latency|延迟)\s*[:：]\s*(\d+)\s*(?:ms|毫秒)')
+pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 
 # 获取网页内容并筛选数据
 for url in urls:
@@ -26,11 +25,9 @@ for url in urls:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             content = response.text
-            matches = re.findall(pattern, content)
-            ips = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', content)
-            for i in range(len(matches)):
-                if int(matches[i]) < DELAY_THRESHOLD_MS:
-                    result_ips.add(f"{ips[i]}#{url}")
+            matches = pattern.findall(content)
+            for ip in matches:
+                result_ips.add(f"{ip}#{url}")
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
