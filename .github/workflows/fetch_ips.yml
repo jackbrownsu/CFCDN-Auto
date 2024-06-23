@@ -1,9 +1,9 @@
 name: Fetch IPs and Update DNS
 
 on:
-  schedule:
-    - cron: '0 0/12 * * *' # 每12小时运行一次
-  #workflow_dispatch: # 手动触发
+  #schedule:
+    #- cron: '0 0/12 * * *' # 每12小时运行一次
+  workflow_dispatch: # 手动触发
 
 jobs:
   fetch-update-dns-and-repo:
@@ -24,11 +24,11 @@ jobs:
         pip install requests
 
     - name: Run fetch_ips.py
-      env:
-        CF_API_KEY: ${{ secrets.CF_API_KEY }}
-        CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
-        CF_DOMAIN_NAME: ${{ secrets.CF_DOMAIN_NAME }}
-        CF_API_EMAIL: ${{ secrets.CF_API_EMAIL }}
+      #env:
+        #CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        #CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+        #CF_DOMAIN_NAME: ${{ secrets.CF_DOMAIN_NAME }}
+        #CF_API_EMAIL: ${{ secrets.CF_API_EMAIL }}
       run: python fetch_ips.py
 
     - name: Commit and push changes
