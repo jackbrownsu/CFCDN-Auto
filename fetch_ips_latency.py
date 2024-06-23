@@ -17,7 +17,9 @@ DELAY_THRESHOLD_MS = 200
 result_ips = set()
 
 # 正则表达式模式匹配
-pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+ip_pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+line_pattern = re.compile(r'(线路名称|Line|线路).+?(\w+)')  # 匹配线路名称
+latency_pattern = re.compile(r'(平均延迟|往返延迟|Latency).+?(\d+)\s*(ms|毫秒)')  # 匹配延迟数据
 
 # 获取网页内容并筛选数据
 for url in urls:
@@ -25,9 +27,33 @@ for url in urls:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             content = response.text
-            matches = pattern.findall(content)
-            for ip in matches:
-                result_ips.add(f"{ip}#{url}")
+            
+            # 匹配 IP 地址
+            ip_matches = ip_pattern.findall(content)
+            
+            # 匹配线路名称
+            line_match = line_pattern.search(content)
+            if line_match:
+                line = line_match.group(2).strip()
+            else:
+                line = ""
+            
+            # 匹配延迟数据
+            latency_match = latency_pattern.search(content)
+            if latency_match:
+                latency = f"{latency_match.group(2)}{latency_match.group(3)}"
+            else:
+                latency = ""
+            
+            # 组装结果
+            for ip in ip_matches:
+                if line and latency:
+                    result_ips.add(f"{ip}#{line}-{latency}")
+                elif line:
+                    result_ips.add(f"{ip}#{line}")
+                else:
+                    result_ips.add(f"{ip}")
+                    
     except Exception as e:
         print(f"Error fetching data from {url}: {e}")
 
