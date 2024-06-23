@@ -38,4 +38,3 @@ jobs:
         git add ips.txt
         git commit -m 'Update ips.txt'
         git push
-  
