@@ -27,10 +27,9 @@ jobs:
       - name: Save output file
         if: success()  # 只有在前面步骤成功后才执行
         run: |
-          mkdir -p output
-          mv ips_latency.txt output/
+          mv ips_latency.txt $GITHUB_WORKSPACE/
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add output/ips_latency.txt
+          git add ips_latency.txt
           git commit -m "Add ips_latency.txt"
           git push
