@@ -47,14 +47,26 @@ def process_site_data(url):
     if "cf.090227.xyz" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            line_name = row.find('th', text=re.compile(r'线路|Line|线路名称')).find_next('td').text.strip()
-            ip_address = row.find('th', text=re.compile(r'IP|IP地址|优选地址')).find_next('td').text.strip()
-            latency_text = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency')).find_next('td').text.strip()
-            latency_match = latency_pattern.match(latency_text)
-            if latency_match:
-                latency_value = latency_match.group(1)
-                latency_unit = 'ms'
-                data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
+            line_name_elem = row.find('th', text=re.compile(r'线路|Line|线路名称'))
+            if line_name_elem:
+                line_name = line_name_elem.find_next('td').text.strip()
+            else:
+                continue
+            
+            ip_address_elem = row.find('th', text=re.compile(r'IP|IP地址|优选地址'))
+            if ip_address_elem:
+                ip_address = ip_address_elem.find_next('td').text.strip()
+            else:
+                continue
+            
+            latency_elem = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency'))
+            if latency_elem:
+                latency_text = latency_elem.find_next('td').text.strip()
+                latency_match = latency_pattern.match(latency_text)
+                if latency_match:
+                    latency_value = latency_match.group(1)
+                    latency_unit = 'ms'
+                    data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
 
     elif "stock.hostmonit.com" in url:
         rows = soup.find_all('tr', class_=re.compile(r'el-table row'))
@@ -94,19 +106,35 @@ def process_site_data(url):
     elif "monitor.gacjie.cn" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            line_name = row.find('th', text=re.compile(r'线路|Line|线路名称')).find_next('td').text.strip()
-            ip_address = row.find('th', text=re.compile(r'IP|IP地址|优选地址')).find_next('td').text.strip()
-            latency_text = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency')).find_next('td').text.strip()
-            latency_match = latency_pattern.match(latency_text)
-            if latency_match:
-                latency_value = latency_match.group(1)
-                latency_unit = 'ms'
-                data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
+            line_name_elem = row.find('th', text=re.compile(r'线路|Line|线路名称'))
+            if line_name_elem:
+                line_name = line_name_elem.find_next('td').text.strip()
+            else:
+                continue
+            
+            ip_address_elem = row.find('th', text=re.compile(r'IP|IP地址|优选地址'))
+            if ip_address_elem:
+                ip_address = ip_address_elem.find_next('td').text.strip()
+            else:
+                continue
+            
+            latency_elem = row.find('th', text=re.compile(r'延迟|平均延迟|往返延迟|Latency'))
+            if latency_elem:
+                latency_text = latency_elem.find_next('td').text.strip()
+                latency_match = latency_pattern.match(latency_text)
+                if latency_match:
+                    latency_value = latency_match.group(1)
+                    latency_unit = 'ms'
+                    data.append(f"{ip_address}#{line_name}-{latency_value}{latency_unit}")
     
     elif "345673.xyz" in url:
         rows = soup.find_all('tr', class_=re.compile(r'line-cm|line-ct|line-cu'))
         for row in rows:
-            line_name = row.find('td', class_=re.compile(r'column 1|column 1')).text.strip()
+            line_name_elem = row.find('td', class_=re.compile(r'column 1|column 1'))
+            if line_name_elem:
+                line_name = line_name_elem.text.strip()
+            else:
+                continue
             
             ip_address_elem = row.find('td', class_=re.compile(r'column 2|column_2'))
             if ip_address_elem:
