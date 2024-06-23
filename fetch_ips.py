@@ -24,7 +24,7 @@ for url in urls:
     if response.status_code == 200:
         data.extend(response.text.split(','))  # 将逗号分隔的数据扩展到列表中
     else:
-        print(f"Failed to fetch data from {url}")
+        print(f"Failed to fetch data from {url}, status code: {response.status_code}")
 
 # 去除重复IP
 unique_data = set(data)
@@ -42,9 +42,9 @@ with open("ips.txt", "w") as file:
 # 从处理后的数据中提取IPv4地址
 ipv4_addresses = [ip.split('#')[0] for ip in processed_data]
 
-# 清空域名的所有DNS记录
+# 清空CF_DOMAIN_NAME的所有DNS记录
 def clear_dns_records():
-    url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records"
+    url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records?name={CF_DOMAIN_NAME}"
     headers = {
         "Authorization": f"Bearer {CF_API_KEY}",
         "X-Auth-Email": CF_API_EMAIL,
@@ -55,12 +55,14 @@ def clear_dns_records():
     if response.status_code == 200:
         records = response.json().get('result', [])
         for record in records:
-            delete_url = f"{url}/{record['id']}"
+            delete_url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records/{record['id']}"
             delete_response = requests.delete(delete_url, headers=headers)
-            if delete_response.status_code != 200:
-                print(f"Failed to delete DNS record: {record['id']}")
+            if delete_response.status_code == 200:
+                print(f"Successfully deleted DNS record: {record['id']}")
+            else:
+                print(f"Failed to delete DNS record: {record['id']}, status code: {delete_response.status_code}")
     else:
-        print("Failed to fetch DNS records")
+        print(f"Failed to fetch DNS records, status code: {response.status_code}")
 
 # 添加新的IPv4地址为DNS记录
 def add_dns_record(ip):
@@ -74,12 +76,14 @@ def add_dns_record(ip):
         "type": "A",
         "name": CF_DOMAIN_NAME,
         "content": ip,
-        "ttl": 1,
+        "ttl": 60,  # 设置TTL为1分钟
         "proxied": False
     }
     response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
-        print(f"Failed to create DNS record for IP: {ip}")
+    if response.status_code == 200:
+        print(f"Successfully created DNS record for IP: {ip}")
+    else:
+        print(f"Failed to create DNS record for IP: {ip}, status code: {response.status_code}, response: {response.text}")
 
 # 执行清空和添加DNS记录的操作
 clear_dns_records()
