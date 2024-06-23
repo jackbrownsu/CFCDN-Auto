@@ -139,7 +139,9 @@ def main():
     filtered_data = [line for line in unique_data if float(line.split('-')[-1].replace('ms', '')) < 100]
 
     # 写入到ips_latency.txt文件
-    with open('ips_latency.txt', 'w', encoding='utf-
+    with open('ips_latency.txt', 'w', encoding='utf-8') as f:
+        for line in filtered_data:
+            f.write(line + '\n')
 
 if __name__ == "__main__":
     main()
