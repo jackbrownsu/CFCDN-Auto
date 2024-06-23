@@ -1,7 +1,9 @@
 name: Site IPs
 
 on:
-  workflow_dispatch:
+  #schedule:
+  #  - cron: '0 0/12 * * *' # 每12小时运行一次
+  workflow_dispatch: # 手动触发
 
 jobs:
   run-and-commit:
@@ -22,6 +24,11 @@ jobs:
         pip install requests beautifulsoup4
 
     - name: Run the site_ips script
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+        CF_DOMAIN_NAME: ${{ secrets.CF_DOMAIN_NAME }}
+        CF_API_EMAIL: ${{ secrets.CF_API_EMAIL }}
       run: python site_ips.py
 
     - name: Commit and push changes
