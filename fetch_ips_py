@@ -1,0 +1,39 @@
+import os
+import requests
+
+# 四个网址
+urls = [
+    "https://addressesapi.090227.xyz/ip.164746.xyz",
+    "https://addressesapi.090227.xyz/ct",
+    "https://addressesapi.090227.xyz/CloudFlareYes",
+    "https://ipdb.api.030101.xyz/?type=bestcf&country=true"
+]
+
+# 存储抓取的数据
+data = []
+
+# 从每个网址抓取数据
+for url in urls:
+    response = requests.get(url)
+    if response.status_code == 200:
+        data.extend(response.text.split(','))  # 将逗号分隔的数据扩展到列表中
+    else:
+        print(f"Failed to fetch data from {url}, status code: {response.status_code}")
+
+# 去除重复IP
+unique_data = set(data)
+
+# 处理数据：对于没有“#”字符的行，添加“#最新优选”
+processed_data = [
+    ip if '#' in ip else ip + "#最新优选"
+    for ip in unique_data
+]
+
+# 将处理后的数据写入ips.txt文件
+with open("ips.txt", "w") as file:
+    file.write("\n".join(processed_data))
+
+# 调试信息：打印所有需要添加的IP地址
+print("Adding the following IPs to DNS records:")
+for ip in ipv4_addresses:
+    print(ip)
