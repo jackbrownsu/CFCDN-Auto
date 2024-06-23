@@ -194,10 +194,5 @@ def add_dns_record(ip):
     with open("site_ips.txt", "r") as file:
         ipv4 = [line.split('#')[0] for line in file if '#' in line]
 
-    # 调试信息：打印所有需要添加的IP地址
-    print("Adding the following IPs to DNS records:")
-    for ip in ipv4:
-        print(ip)
-
 if __name__ == "__main__":
     main()
