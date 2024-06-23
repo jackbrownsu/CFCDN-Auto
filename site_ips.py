@@ -123,8 +123,8 @@ def main():
     # 过滤延迟数据低于100ms的行
     filtered_data = [line for line in unique_data if float(line.split('-')[-1].replace('ms', '')) < 100]
 
-    # 写入到ips_latency.txt文件
-    with open('ips_latency.txt', 'w', encoding='utf-8') as f:
+    # 写入到site_ips.txt文件
+    with open('site_ips.txt', 'w', encoding='utf-8') as f:
         for line in filtered_data:
             f.write(line + '\n')
 
