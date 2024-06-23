@@ -23,18 +23,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests
 
-    - name: Run fetch_ips.py
+    - name: Run api_ips.py
       #env:
         #CF_API_KEY: ${{ secrets.CF_API_KEY }}
         #CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
         #CF_DOMAIN_NAME: ${{ secrets.CF_DOMAIN_NAME }}
         #CF_API_EMAIL: ${{ secrets.CF_API_EMAIL }}
-      run: python fetch_ips.py
+      run: python api_ips.py
 
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add ips.txt
-        git commit -m 'Update ips.txt'
+        git add api_ips.txt
+        git commit -m 'Update api_ips.txt'
         git push
