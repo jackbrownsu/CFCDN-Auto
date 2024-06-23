@@ -19,9 +19,14 @@ for url in urls:
     else:
         print(f"Failed to fetch data from {url}")
 
-# 去除重复IP并在每行末尾添加“#最新优选”
+# 去除重复IP
 unique_data = set(data)
-processed_data = [ip + " #最新优选" for ip in unique_data]
+
+# 处理数据：对于没有“#”字符的行，添加“#最新优选”
+processed_data = [
+    ip if '#' in ip else ip + "#最新优选"
+    for ip in unique_data
+]
 
 # 将处理后的数据写入ips.txt文件
 with open("ips.txt", "w") as file:
