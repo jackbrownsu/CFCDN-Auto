@@ -29,5 +29,5 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add ips_latency.txt
-          git commit -m "Add ips_latency.txt"
+          git commit -am "Add ips_latency.txt"
           git push
