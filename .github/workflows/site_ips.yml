@@ -1,4 +1,4 @@
-name: site_ips
+name: Site IPs
 
 on:
   workflow_dispatch:
@@ -28,6 +28,6 @@ jobs:
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "GitHub Actions"
-        git add ips_latency.txt
-        git commit -m "Update ips_latency.txt" || echo "No changes to commit"
+        git add site_ips.txt
+        git commit -m "Update site_ips.txt" || echo "No changes to commit"
         git push origin main
