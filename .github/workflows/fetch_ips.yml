@@ -1,4 +1,4 @@
-name: Fetch IPs
+name: API IPs
 
 on:
   #schedule:
