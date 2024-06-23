@@ -1,4 +1,4 @@
-## 功能
+## api_ips.py功能
 
 1. 从四个公开的网页获取ip数据  
 https://addressesapi.090227.xyz/ip.164746.xyz  
@@ -6,21 +6,32 @@ https://addressesapi.090227.xyz/ct
 https://addressesapi.090227.xyz/CloudFlareYes  
 https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
-3. 将获取的ip去重，写入到仓库中的`ips.txt`文件
+3. 将获取的ip去重，写入到仓库中的`api_ips.txt`文件
 
-4. 清除`actions`环境变量中设置的cf子域名中旧的dns记录
+4. 通过`github actions`脚本`api_ips.yml`实现每12小时更新一次`api_ips.txt`文件
 
-5. 将`ips.txt`中的ip地址更新到上述子域名。
+5. `api_ips.txt`文件可用于cm大佬的的edge项目中的`ADDAPI`变量
 
-## 部署方式
+## yx_ips.py功能
 
-> 使用`github actions`方式部署，默认每12小时自动执行一次  
-> 可自行在actions的`yml`文件中修改自动运行频率  
-> 也可以通过vps部署，部署脚本请自行GPT解决
+1. 从五个公开的网页抓取ip、线路、延迟数据  
+    https://cf.090227.xyz  
+    https://stock.hostmonit.com/CloudFlareYes  
+    https://ip.164746.xyz  
+    https://monitor.gacjie.cn/page/cloudflare/ipv4.html  
+    https://345673.xyz  
 
-**如何部署？**  
+3. 将获取的数据进行筛选、去重，仅保留延迟低于100ms的数据，并在仓库内生成`yx.ips.txt`文件
 
-- fork本仓库，或[新建](https://github.com/new)一个私有库并导入本仓库的全部文件
+4. 从`yx.ips.txt`文件中提取ip地址，自动更新到cf子域名的dns记录中（先清空再更新，不影响根域名）
+
+5. 配置`github actions`脚本`yx_ips.yml`实现每12小时更新一次`yx_ips.txt`文件
+
+
+## Github Actions的部署方式
+
+### 首先添加环境变量
+> 需要脚本中代码支持才能生效
 
 - 依次点击`Settings`-->`Secrets and variables`-->`Secrets and variables`-->`Actions`，添加以下环境变量
   - `CF_API_EMAIL` = 你的cf邮箱用户名
@@ -30,18 +41,19 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
 - 依次点击`Settings`-->`Actions`-->`General`，找到`Workflow permissions`，选择`Read and write permissions`可读写权限
 
-**如何修改自动运行频率？**
+### 修改自动运行频率
 
-- 打开`.github/workflows/`文件夹中的`fetch_ips.yml`文件
+- 打开`.github/workflows/`文件夹中的`yml`文件
 
 - 修改第5行`- cron: '0 0/12 * * *' # 每12小时运行一次`中的参数
 
 ## 其他说明
 
-可以添加同类型的其他网页抓取更多数据，自行在`fetch_ips.py`文件的`urls`参数中添加，  
-但是必须注意：**网页内容必须是可以直接获取ip数据的直链API地址**，否则无法抓取数据。
+可以添加同类型的其他网页抓取更多数据，自行在`py`文件的`urls`参数中添加，  
 
-**现在，将你的`ips.txt`RAW文件地址设置到cm大佬的的edge项目中的`ADDAPI`变量**  
+但是必须注意：*网页内容必须是可以直接获取ip数据的直链API地址，如果不是，需要解析网页数据结构，比较麻烦。*
+
+**现在，将你的`api_ips.txt`RAW文件地址设置到cm大佬的的edge项目中的`ADDAPI`变量**  
   如果你创建的是私有库，请看这里：[如何获取私库文件的raw地址](https://github.com/cmliu/CF-Workers-Raw)
 
 **或者，将你已更新DNS的域名设置到cm大佬的的edge项目中的`ADD`变量，享受大佬们的成果吧**
