@@ -1,4 +1,4 @@
-name: Run site_ips script
+name: site_ips
 
 on:
   workflow_dispatch:
