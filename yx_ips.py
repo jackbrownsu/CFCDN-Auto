@@ -130,16 +130,16 @@ def main():
     # 过滤延迟数据低于100ms的行
     filtered_data = [line for line in unique_data if float(line.split('-')[-1].replace('ms', '')) < 100]
 
-    # 写入到site_ips.txt文件
-    with open('site_ips.txt', 'w', encoding='utf-8') as f:
+    # 写入到yx_ips.txt文件
+    with open('yx_ips.txt', 'w', encoding='utf-8') as f:
         for line in filtered_data:
             f.write(line + '\n')
 
     # 执行清空DNS记录的操作
     clear_dns_records()
     
-    # 从site_ips.txt文件中提取IPv4地址
-    with open("site_ips.txt", "r") as file:
+    # 从yx_ips.txt文件中提取IPv4地址
+    with open("yx_ips.txt", "r") as file:
         ipv4 = [line.split('#')[0] for line in file if '#' in line]
 
     # 执行添加DNS记录的操作
@@ -171,7 +171,7 @@ def clear_dns_records():
 # 添加新的IPv4地址为DNS记录，在 add_dns_record 函数中添加调试输出
 def add_dns_record(ip):
     # 重新获取 ipv4 地址
-    with open("site_ips.txt", "r") as file:
+    with open("yx_ips.txt", "r") as file:
         ipv4 = [line.split('#')[0] for line in file if '#' in line]
 
     print(f"Adding DNS record for IP: {ip}")
