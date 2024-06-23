@@ -26,7 +26,27 @@ def fetch_and_parse(url):
         print(f"Error fetching data from {url}: {e}")
         return None
 
-def extract_data(soup, url):
+def extract_data_cf_090227(soup):
+    for row in soup.find_all('tr'):
+        columns = row.find_all('td')
+        if len(columns) < 3:
+            continue
+
+        ip_address = columns[1].get_text(strip=True)
+        latency_text = columns[2].get_text(strip=True)
+        line = columns[0].get_text(strip=True)
+
+        match = re.match(r'(\d+(\.\d+)?)\s*(ms|毫秒)?', latency_text)
+        if match:
+            latency = float(match.group(1))
+            if match.group(3) in ['毫秒', None]:
+                latency = latency  # 保持毫秒不变
+
+            # 仅保留延迟数据低于目标值的数据
+            if latency < DELAY_THRESHOLD_MS:
+                result_ips[ip_address] = f"{ip_address}#{line}-{latency:.2f}ms"
+
+def extract_data_general(soup, url):
     headers = [th.get_text(strip=True) for th in soup.find_all('th')]
     line_index, ip_index, latency_index = -1, -1, -1
 
@@ -74,7 +94,10 @@ def process_row(columns, line_index, ip_index, latency_index):
 for url in urls:
     soup = fetch_and_parse(url)
     if soup:
-        extract_data(soup, url)
+        if url == "https://cf.090227.xyz/":
+            extract_data_cf_090227(soup)
+        else:
+            extract_data_general(soup, url)
 
 # 将结果写入到txt文件中
 with open("ips_latency.txt", "w") as file:
