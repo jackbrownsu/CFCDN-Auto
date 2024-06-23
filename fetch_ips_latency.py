@@ -2,13 +2,23 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+# 定义请求头
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Referer': 'https://cf.090227.xyz/',
+    'Referer': 'https://stock.hostmonit.com/',
+    'Referer': 'https://ip.164746.xyz/',
+    'Referer': 'https://monitor.gacjie.cn/',
+    'Referer': 'https://345673.xyz/'
+}
+
 # 配置多个网址
 urls = [
-    "https://cf.090227.xyz/",
+    "https://cf.090227.xyz",
     "https://stock.hostmonit.com/CloudFlareYes",
-    "https://ip.164746.xyz/",
+    "https://ip.164746.xyz",
     "https://monitor.gacjie.cn/page/cloudflare/ipv4.html",
-    "https://345673.xyz/#"
+    "https://345673.xyz"
 ]
 
 # 目标延迟阈值
