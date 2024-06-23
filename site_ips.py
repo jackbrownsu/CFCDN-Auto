@@ -2,6 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+# Cloudflare API配置信息
+CF_API_KEY = os.getenv('CF_API_KEY')
+CF_ZONE_ID = os.getenv('CF_ZONE_ID')
+CF_DOMAIN_NAME = os.getenv('CF_DOMAIN_NAME')
+CF_API_EMAIL = os.getenv('CF_API_EMAIL')
+
 # 定义请求头
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -127,6 +133,56 @@ def main():
     with open('site_ips.txt', 'w', encoding='utf-8') as f:
         for line in filtered_data:
             f.write(line + '\n')
+
+# 从site_ips.txt文件中提取IPv4地址
+with open("site_ips.txt", "r") as file:
+    ipv4_addresses = [line.split('#')[0] for line in file if '#' in line]
+
+# 清空CF_DOMAIN_NAME的所有DNS记录
+def clear_dns_records():
+    url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records?name={CF_DOMAIN_NAME}"
+    headers = {
+        "Authorization": f"Bearer {CF_API_KEY}",
+        "X-Auth-Email": CF_API_EMAIL,
+        "Content-Type": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        records = response.json().get('result', [])
+        for record in records:
+            delete_url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records/{record['id']}"
+            delete_response = requests.delete(delete_url, headers=headers)
+            if delete_response.status_code == 200:
+                print(f"Successfully deleted DNS record: {record['id']}")
+            else:
+                print(f"Failed to delete DNS record: {record['id']}, status code: {delete_response.status_code}, response: {delete_response.text}")
+    else:
+        print(f"Failed to fetch DNS records, status code: {response.status_code}, response: {response.text}")
+
+# 添加新的IPv4地址为DNS记录
+def add_dns_record(ip):
+    url = f"https://api.cloudflare.com/client/v4/zones/{CF_ZONE_ID}/dns_records"
+    headers = {
+        "Authorization": f"Bearer {CF_API_KEY}",
+        "X-Auth-Email": CF_API_EMAIL,
+        "Content-Type": "application/json"
+    }
+    data = {
+        "type": "A",
+        "name": CF_DOMAIN_NAME,
+        "content": ip,
+        "ttl": 60,  # 设置TTL为1分钟
+        "proxied": False
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        print(f"Successfully created DNS record for IP: {ip}")
+    else:
+        print(f"Failed to create DNS record for IP: {ip}, status code: {response.status_code}, response: {response.text}")
+
+# 执行清空和添加DNS记录的操作
+clear_dns_records()
 
 if __name__ == "__main__":
     main()
