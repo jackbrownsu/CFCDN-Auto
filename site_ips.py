@@ -42,12 +42,11 @@ def process_site_data(url):
     if "cf.090227.xyz" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            ths = row.find_all('th')
-            tds = row.find_all('td')
-            if len(ths) == 3 and len(tds) == 3:
-                line_name = tds[0].text.strip()
-                ip_address = tds[1].text.strip()
-                latency_text = tds[2].text.strip()
+            columns = row.find_all('td')
+            if len(columns) >= 3:
+                line_name = columns[0].text.strip()
+                ip_address = columns[1].text.strip()
+                latency_text = columns[2].text.strip()
                 latency_match = latency_pattern.match(latency_text)
                 if latency_match:
                     latency_value = latency_match.group(1)
@@ -57,11 +56,11 @@ def process_site_data(url):
     elif "stock.hostmonit.com" in url:
         rows = soup.find_all('tr', class_=re.compile(r'el-table__row'))
         for row in rows:
-            tds = row.find_all('td')
-            if len(tds) >= 3:
-                line_name = tds[0].text.strip()
-                ip_address = tds[1].text.strip()
-                latency_text = tds[2].text.strip()
+            columns = row.find_all('td')
+            if len(columns) >= 3:
+                line_name = columns[0].text.strip()
+                ip_address = columns[1].text.strip()
+                latency_text = columns[2].text.strip()
                 latency_match = latency_pattern.match(latency_text)
                 if latency_match:
                     latency_value = latency_match.group(1)
@@ -71,10 +70,10 @@ def process_site_data(url):
     elif "ip.164746.xyz" in url:
         rows = soup.find_all('tr')
         for row in rows:
-            tds = row.find_all('td')
-            if len(tds) >= 5:
-                ip_address = tds[0].text.strip()
-                latency_text = tds[4].text.strip()
+            columns = row.find_all('td')
+            if len(columns) >= 5:
+                ip_address = columns[0].text.strip()
+                latency_text = columns[4].text.strip()
                 latency_match = latency_pattern.match(latency_text)
                 if latency_match:
                     latency_value = latency_match.group(1)
