@@ -1,4 +1,4 @@
-name: Fetch IPs, Update DNS and Update Repo
+name: Fetch IPs and Update DNS
 
 on:
   #schedule:
@@ -23,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests
 
-    - name: Run fetch_and_update_dns.py
+    - name: Run fetch_ips.py
       env:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
         CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
