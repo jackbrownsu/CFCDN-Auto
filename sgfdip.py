@@ -77,6 +77,10 @@ def update_dns_records():
             'proxied': False,
         }
         requests.post(dns_records_url, headers=headers, json=data)
+        if response.status_code == 200:
+            print(f"Successfully updated DNS record for {CF_DNS_NAME} to {ip}")
+        else:
+            print(f"Failed to update DNS record for {CF_DNS_NAME} to {ip}. Status code: {response.status_code}")
 
 # 主函数：按顺序执行所有步骤
 def main():
