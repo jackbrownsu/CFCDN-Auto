@@ -1,31 +1,40 @@
 name: Update Singapore IPs
 
 on:
-  workflow_dispatch: # 手动运行
+  workflow_dispatch:
   # schedule:
-  #   - cron: '0 0 * * *' # 每天午夜运行一次
+  #   - cron: '0 0 * * *'  # 每天午夜运行一次，可以根据需求调整
 
 jobs:
-  update-ips:
+  update_ips_and_dns:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests ipwhois beautifulsoup4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ipwhois requests beautifulsoup4
 
-    - name: Run script
-      env:
-        CF_API_KEY: ${{ secrets.CF_API_KEY }}
-        CF_ZONE_YID: ${{ secrets.CF_ZONE_YID }}
-        CF_DNS_NAME: ${{ secrets.CF_DNS_NAME }}
-      run: python sgfdip.py
+      - name: Run Python script to update sgfd_ips.txt and DNS
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_ZONE_YID: ${{ secrets.CF_ZONE_YID }}
+          CF_DNS_NAME: ${{ secrets.CF_DNS_NAME }}
+        run: python sgfdip.py
+
+      - name: Commit and push changes to repository
+        if: success() && steps.python.outputs.ip_found == 'true'
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add sgfd_ips.txt
+          git commit -m "Update sgfd_ips.txt with new Singapore IPs"
+          git push
