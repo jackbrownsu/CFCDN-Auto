@@ -20,14 +20,15 @@ def get_ip_data():
 
     response2 = requests.get(url2)
     soup = BeautifulSoup(response2.text, 'html.parser')
+
     alibaba_ips = []
     for strong_tag in soup.find_all('strong'):
         if '🇸🇬 Singapore, Alibaba Technology Co' in strong_tag.text:
-            table = strong_tag.find_next_sibling('table', class_='highlighttable')
-            if table:
-                for td in table.find_all('td', class_='code'):
-                    ip = td.text.strip()
-                    alibaba_ips.append(ip)
+            next_divs = strong_tag.find_next_siblings('div', class_='clippy')
+            for div in next_divs:
+                ip = div.get('value')
+                if ip:
+                    alibaba_ips.append(ip.strip())
 
     # 合并IP地址列表
     ip_list = ip_list1 + alibaba_ips
