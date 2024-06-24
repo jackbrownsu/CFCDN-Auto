@@ -1,8 +1,6 @@
 import requests
 import os
 from ipwhois import IPWhois
-from bs4 import BeautifulSoup
-import subprocess
 
 # 配置
 CF_API_KEY = os.getenv('CF_API_KEY')
@@ -81,7 +79,7 @@ def update_dns_records():
             print(f"Successfully updated DNS record for {CF_DNS_NAME} to {ip}")
         else:
             print(f"Failed to update DNS record for {CF_DNS_NAME} to {ip}. Status code: {response.status_code}")
- 
+
 # 主函数：按顺序执行所有步骤
 def main():
     # 第一步：获取IP数据
