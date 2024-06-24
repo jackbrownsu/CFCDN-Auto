@@ -15,31 +15,39 @@ ip_found = False
 # 第一步：从URL获取IP数据
 def get_ip_data():
     url = 'https://ipdb.api.030101.xyz/?type=bestproxy&country=true'
-    response = requests.get(url)
-    ip_list = response.json()
 
-    singapore_ips = []
-    seen_ips = set()  # 用于存储已经见过的 IP 地址，避免重复
+    response = requests.get(url)
+    if response.status_code == 200:
+        ip_list = response.text.splitlines()
+    else:
+        print(f"Failed to retrieve IP data from {url}. Status code: {response.status_code}")
+        ip_list = []
+
+    return ip_list
+
+# 第二步：过滤包含#SG的数据，并去除重复的IP地址
+def filter_ips(ip_list):
+    singapore_ips = set()  # 使用集合来去除重复的IP
 
     for ip in ip_list:
-        if '#SG' in ip and ip.split('#')[0].strip() not in seen_ips:  # 只保留包含 #SG 并且未见过的数据
-            singapore_ips.append(ip)
-            seen_ips.add(ip.split('#')[0].strip())
+        if '#SG' in ip:
+            ip_without_flag = ip.split('#')[0].strip()
+            singapore_ips.add(ip_without_flag)
 
-    return singapore_ips
+    return list(singapore_ips)
 
-# 第二步：将格式化后的新加坡IP地址写入到sgfd_ips.txt文件
+# 第三步：将符合条件的IP写入sgfd_ips.txt文件
 def write_to_file(ip_addresses):
     with open(FILE_PATH, 'w') as f:
         for ip in ip_addresses:
             f.write(ip + '\n')
 
-# 第三步：更新Cloudflare域名的DNS记录为sgfd_ips.txt文件中的IP地址
+# 第四步：更新Cloudflare域名的DNS记录为sgfd_ips.txt文件中的IP地址
 def update_dns_records():
     global ip_found  # 使用全局变量 ip_found
 
-    if not ip_addresses:  # 如果没有符合条件的 IP 地址，则直接返回
-        print("No Singapore IPs found. Exiting.")
+    if not ip_found:  # 如果没有找到符合条件的 IP 地址，则直接返回
+        print("No Singapore IPs found. Exiting update_dns_records().")
         return
 
     headers = {
@@ -63,7 +71,9 @@ def update_dns_records():
             'ttl': 60,
             'proxied': False,
         }
-        requests.post(dns_records_url, headers=headers, json=data)
+        response = requests.post(dns_records_url, headers=headers, json=data)
+        if response.status_code != 200:
+            print(f"Failed to update DNS record for {ip}. Status code: {response.status_code}")
 
     ip_found = True  # 设置 ip_found 为 True，表示已经找到了符合条件的 IP 地址
 
@@ -74,15 +84,18 @@ def main():
     # 第一步：获取IP数据
     ip_list = get_ip_data()
 
+    # 第二步：过滤并去除重复的新加坡IP地址
+    singapore_ips = filter_ips(ip_list)
+    
     # 如果没有找到符合条件的新加坡IP，则终止后续动作
-    if not ip_list:
+    if not singapore_ips:
         print("No Singapore IPs found. Exiting.")
         return
 
-    # 第二步：将格式化后的新加坡IP地址写入文件
-    write_to_file(ip_list)
+    # 第三步：将格式化后的新加坡IP地址写入文件
+    write_to_file(singapore_ips)
 
-    # 第三步：更新Cloudflare域名的DNS记录为sgfd_ips.txt文件中的IP地址
+    # 第四步：更新Cloudflare域名的DNS记录为sgfd_ips.txt文件中的IP地址
     update_dns_records()
 
 if __name__ == "__main__":
