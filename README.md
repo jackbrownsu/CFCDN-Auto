@@ -27,6 +27,11 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
 5. 配置`github actions`脚本`yx_ips.yml`实现每12小时更新一次`yx_ips.txt`文件
 
+## sgfd_ips.py功能
+
+1. 从<https://raw.githubusercontent.com/ymyuuu/IPDB/main/bestproxy.txt>获取ip地址，[项目地址](https://github.com/ymyuuu/IPDB)
+
+2. 筛选其中归属地为`SG`的ip，并按照`IP#SG`的格式写入https://github.com/ymyuuu/IPDB
 
 ## Github Actions的部署方式
 
