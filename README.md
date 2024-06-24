@@ -31,7 +31,11 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
 1. 从<https://raw.githubusercontent.com/ymyuuu/IPDB/main/bestproxy.txt>获取ip地址，[项目地址](https://github.com/ymyuuu/IPDB)
 
-2. 筛选其中归属地为`SG`的ip，并按照`IP#SG`的格式写入https://github.com/ymyuuu/IPDB
+2. 筛选其中归属地为`SG`的ip，并按照`IP#SG`的格式写入`sgfd_ips.txt`文件中
+
+3. 将获取到的IP地址更新到cf的子域名dns记录中（先清空再更新，不影响根域名）
+
+4. 配置`github actions`脚本`sgfd_ips.yml`实现每6小时更新一次`sgfd_ips.txt`文件
 
 ## Github Actions的部署方式
 
