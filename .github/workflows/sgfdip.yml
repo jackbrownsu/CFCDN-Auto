@@ -1,0 +1,31 @@
+name: Update Singapore IPs
+
+on:
+  workflow_dispatch: # 手动运行
+  # schedule:
+  #   - cron: '0 0 * * *' # 每天午夜运行一次
+
+jobs:
+  update-ips:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests ipwhois beautifulsoup4
+
+    - name: Run script
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        CF_ZONE_YID: ${{ secrets.CF_ZONE_YID }}
+        CF_DNS_NAME: ${{ secrets.CF_DNS_NAME }}
+      run: python sgfdip.py
