@@ -43,7 +43,7 @@ fi
 # 解压 txt.zip 文件并保留只有45102-1-443.txt和31898-1-443.txt，删除其他文件
 echo "===============================解压和合并文件==============================="
 unzip "${SAVE_PATH}" -d "${FDIP_DIR}"
-rm -f "${FDIP_DIR}/"!(45102-1-443.txt|31898-1-443.txt)
+find "${FDIP_DIR}" -type f ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
 cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
