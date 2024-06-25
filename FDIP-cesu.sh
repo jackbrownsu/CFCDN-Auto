@@ -48,9 +48,9 @@ unzip -o "${SAVE_PATH}" -d "${FDIP_DIR}"
 cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
-# 删除除了特定文件外的所有 *-*-*.txt 文件
+# 删除 FDIP 文件夹中所有 *-*-*.txt 格式的文件，除了 45102-1-443.txt 和 31898-1-443.txt
 echo "===========================清理不必要的文件==========================="
-rm -f "${FDIP_DIR}"/*-*-*.txt
+find "${FDIP_DIR}" -type f -name '*-*-*.txt' ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
 
 # 清空或创建空的 sg.txt 文件
 > $SG_FILE
