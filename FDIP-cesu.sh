@@ -6,7 +6,6 @@ export LANG=zh_CN.UTF-8
 # 配置目录
 BASE_DIR=$(pwd)
 FDIP_DIR="${BASE_DIR}/FDIP"
-FDIPALL_DIR="${BASE_DIR}/FDIPALL"
 CFST_DIR="${BASE_DIR}/CloudflareST"
 SG_FILE="${FDIP_DIR}/sg.txt"
 OUTPUT_FILE="${FDIP_DIR}/SG443FD.csv"
@@ -16,7 +15,6 @@ SAVE_PATH="${FDIP_DIR}/txt.zip"
 
 # 创建所需目录
 mkdir -p "${FDIP_DIR}"
-mkdir -p "${FDIPALL_DIR}"
 mkdir -p "${CFST_DIR}"
 
 # 更新并安装依赖
@@ -42,17 +40,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 解压 txt.zip 文件到临时文件夹 FDIPALL
+# 解压 txt.zip 文件到 FDIP 文件夹
 echo "===============================解压和合并文件==============================="
-unzip "${SAVE_PATH}" -d "${FDIPALL_DIR}"
+unzip -o "${SAVE_PATH}" -d "${FDIP_DIR}"
 
-# 复制所需文件到 FDIP 文件夹
-cp "${FDIPALL_DIR}/45102-1-443.txt" "${FDIP_DIR}/45102-1-443.txt"
-cp "${FDIPALL_DIR}/31898-1-443.txt" "${FDIP_DIR}/31898-1-443.txt"
+# 合并并去重指定的文件
+cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
+awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
-# 删除整个 FDIPALL 目录
-echo "===========================清理临时文件夹 FDIPALL==========================="
-rm -rf "${FDIPALL_DIR}"
+# 删除除了特定文件外的所有 *-*-*.txt 文件
+echo "===========================清理不必要的文件==========================="
+rm -f "${FDIP_DIR}"/*-*-*.txt
 
 # 清空或创建空的 sg.txt 文件
 > $SG_FILE
