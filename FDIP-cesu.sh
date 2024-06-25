@@ -79,10 +79,16 @@ OUTPUT_FILE="${FDIP_DIR}/SG443FD.csv"
 FINAL_OUTPUT="${FDIP_DIR}/sgcs.txt"
 URL="https://spurl.api.030101.xyz/100mb"
 
-# 下载 CloudflareSpeedTest
-wget -O "${CFST_DIR}/CloudflareST.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
-tar -xzf "${CFST_DIR}/CloudflareST.tar.gz" -C "${CFST_DIR}"
-chmod +x "${CFST_DIR}/CloudflareST"
+# 下载 CloudflareSpeedTest，仅在CloudflareST.tar.gz不存在时下载
+if [ ! -f "${CFST_DIR}/CloudflareST.tar.gz" ]; then
+    wget -O "${CFST_DIR}/CloudflareST.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
+fi
+
+# 设置权限和解压，仅在CloudflareST文件夹中CloudflareST目录不存在时执行
+if [ ! -d "${CFST_DIR}/CloudflareST" ]; then
+    tar -xzf "${CFST_DIR}/CloudflareST.tar.gz" -C "${CFST_DIR}"
+    chmod +x "${CFST_DIR}/CloudflareST/CloudflareST"
+fi
 
 # 运行速度测试
 "${CFST_DIR}/CloudflareST" -tp 443 -f $sg_file -n 500 -dn 8 -tl 250 -tll 10 -o $OUTPUT_FILE -url $URL
