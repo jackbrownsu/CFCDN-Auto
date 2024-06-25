@@ -7,6 +7,7 @@ CF_API_KEY = os.getenv('CF_API_KEY')
 CF_ZONE_YID = os.getenv('CF_ZONE_YID')
 CF_DNS_NAME = os.getenv('CF_DNS_NAME')
 FILE_PATH = 'sgfd_ips.txt'
+SGCS_FILE_PATH = 'CloudflareST/sgcs.txt'
 
 # 第一步：从URL获取IP数据
 def get_ip_data():
@@ -37,6 +38,23 @@ def write_to_file(ip_addresses):
     with open(FILE_PATH, 'w') as f:
         for ip in ip_addresses:
             f.write(ip + '\n')
+
+# 追加CloudflareST/sgcs.txt文件中的IP地址到sgfd_ips.txt
+def append_sgcs_ips():
+    try:
+        if os.path.exists(SGCS_FILE_PATH) and os.path.getsize(SGCS_FILE_PATH) > 0:
+            with open(SGCS_FILE_PATH, 'r') as f:
+                sgcs_ips = f.readlines()
+            
+            with open(FILE_PATH, 'a') as f:
+                for ip in sgcs_ips:
+                    ip = ip.strip()
+                    if ip:  # 确保不写入空行
+                        f.write(f"{ip}#SG\n")
+        else:
+            print("sgcs.txt is empty or does not exist. Skipping this step.")
+    except Exception as e:
+        print(f"Error appending IPs from sgcs.txt: {e}")
 
 # 第四步：清除指定Cloudflare域名的所有DNS记录
 def clear_dns_records():
@@ -95,6 +113,9 @@ def main():
 
     # 第三步：将格式化后的新加坡IP地址写入文件
     write_to_file(singapore_ips)
+
+    # 追加CloudflareST/sgcs.txt文件中的IP地址
+    append_sgcs_ips()
 
     # 第四步：清除指定Cloudflare域名的所有DNS记录
     clear_dns_records()
