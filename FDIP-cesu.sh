@@ -6,6 +6,7 @@ export LANG=zh_CN.UTF-8
 # 配置目录
 BASE_DIR=$(pwd)
 FDIP_DIR="${BASE_DIR}/FDIP"
+FDIPALL_DIR="${BASE_DIR}/FDIPALL"
 CFST_DIR="${BASE_DIR}/CloudflareST"
 SG_FILE="${FDIP_DIR}/sg.txt"
 OUTPUT_FILE="${FDIP_DIR}/SG443FD.csv"
@@ -15,6 +16,7 @@ SAVE_PATH="${FDIP_DIR}/txt.zip"
 
 # 创建所需目录
 mkdir -p "${FDIP_DIR}"
+mkdir -p "${FDIPALL_DIR}"
 mkdir -p "${CFST_DIR}"
 
 # 更新并安装依赖
@@ -40,18 +42,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 解压 txt.zip 文件并保留只有45102-1-443.txt和31898-1-443.txt，删除其他文件
+# 解压 txt.zip 文件到临时文件夹 FDIPALL
 echo "===============================解压和合并文件==============================="
-unzip "${SAVE_PATH}" -d "${FDIP_DIR}"
+unzip "${SAVE_PATH}" -d "${FDIPALL_DIR}"
 
-# 删除除了45102-1-443.txt和31898-1-443.txt之外的所有文件
-find "${FDIP_DIR}" -type f ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
+# 复制所需文件到 FDIP 文件夹
+cp "${FDIPALL_DIR}/45102-1-443.txt" "${FDIP_DIR}/45102-1-443.txt"
+cp "${FDIPALL_DIR}/31898-1-443.txt" "${FDIP_DIR}/31898-1-443.txt"
 
-# 合并文件
-cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
-awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
-
-# 清空或创建空的sg.txt文件
+# 清空或创建空的 sg.txt 文件
 > $SG_FILE
 
 echo "=========================筛选国家代码为SG的IP地址=========================="
@@ -62,7 +61,7 @@ while IFS= read -r ip; do
     fi
 done < "${FDIP_DIR}/all_unique.txt"
 
-# 输出sg.txt文件中的内容，用于调试
+# 输出 sg.txt 文件中的内容，用于调试
 echo "SG IPs:"
 cat $SG_FILE
 
@@ -82,3 +81,7 @@ fi
 awk -F, 'NR>1 && $7 > 6 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_OUTPUT
 
 echo "测速完成，速度超过6 mb/s的IP地址已保存到sgcs.txt文件中。"
+
+# 删除临时文件夹 FDIPALL 和 txt.zip 文件
+rm -rf "${FDIPALL_DIR}"
+rm -f "${SAVE_PATH}"
