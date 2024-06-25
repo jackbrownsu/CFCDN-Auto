@@ -1,11 +1,9 @@
 #!/bin/bash
 
-# 设置语言和代理
+# 设置语言
 export LANG=zh_CN.UTF-8
-proxy="https://dl.houyitfg.icu/proxy/"
-asn=""
-port="443"
-scip="true"
+
+# 配置目录
 BASE_DIR=$(pwd)
 CFST_DIR="${BASE_DIR}/CloudflareST"
 IP_DIR="${BASE_DIR}/FDIP"
@@ -34,13 +32,13 @@ install_dependency mmdb-bin
 # 下载 Country.mmdb 文件
 if [ ! -f "${CFST_DIR}/Country.mmdb" ]; then
     echo "Country.mmdb 文件不存在，开始下载..."
-    curl -L -o "${CFST_DIR}/Country.mmdb" "${proxy}https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
+    curl -L -o "${CFST_DIR}/Country.mmdb" "https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
     [ $? -ne 0 ] && echo "下载失败，脚本终止。" && exit 1
     echo "下载完成。"
 fi
 
 echo "============================开始下载白嫖的反代IP包============================="
-download_url="${proxy}https://zip.baipiao.eu.org/"
+download_url="https://zip.baipiao.eu.org/"
 save_path="${CFST_DIR}/txt.zip"
 extracted_folder="${CFST_DIR}/FDIP-TXT"
 
