@@ -3,7 +3,7 @@ name: SGIP Speed Test
 on:
   #workflow_dispatch:  # 手动触发
   schedule:
-    - cron: '0 0/6 * * *'  # 每6小时运行一次，可以根据需求调整
+    - cron: '0 0 2,8,14,20 * *'  # 每6小时运行一次，可以根据需求调整
 
 jobs:
   ip-speed-test:
