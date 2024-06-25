@@ -7,9 +7,6 @@ export LANG=zh_CN.UTF-8
 BASE_DIR=$(pwd)
 FDIP_DIR="${BASE_DIR}/FDIP"
 CFST_DIR="${BASE_DIR}/CloudflareST"
-SG_FILE="${FDIP_DIR}/sg.txt"
-OUTPUT_FILE="${FDIP_DIR}/SG443FD.csv"
-FINAL_OUTPUT="${FDIP_DIR}/sgcs.txt"
 URL="https://spurl.api.030101.xyz/100mb"
 SAVE_PATH="${FDIP_DIR}/txt.zip"
 
@@ -17,21 +14,7 @@ SAVE_PATH="${FDIP_DIR}/txt.zip"
 mkdir -p "${FDIP_DIR}"
 mkdir -p "${CFST_DIR}"
 
-# 更新并安装依赖
-install_dependency() {
-    if ! command -v "$1" &> /dev/null; then
-        echo "$1 未安装，开始安装..."
-        sudo apt-get update
-        sudo apt-get install -y "$1"
-        echo "$1 安装完成!"
-    fi
-}
-
-install_dependency curl
-install_dependency jq
-install_dependency unzip
-
-# 下载 txt.zip 文件
+# 1. 下载 txt.zip 文件
 echo "============================开始下载txt.zip============================="
 download_url="https://zip.baipiao.eu.org/"
 wget "${download_url}" -O "${SAVE_PATH}"
@@ -40,53 +23,45 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 解压 txt.zip 文件到 FDIP 文件夹
-echo "===============================解压和合并文件==============================="
+# 2. 解压 txt.zip 文件到 FDIP 文件夹
+echo "===============================解压txt.zip==============================="
 unzip -o "${SAVE_PATH}" -d "${FDIP_DIR}"
 
-# 合并并去重指定的文件
-cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
-awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
+# 3. 合并并去重指定的文件
+echo "===============================合并和去重文件==============================="
+#cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" | sort -u > "${FDIP_DIR}/all.txt"
+awk '!seen[$0]++' "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 
-# 删除 FDIP 文件夹中所有 *-*-*.txt 格式的文件，除了 45102-1-443.txt 和 31898-1-443.txt
-echo "===========================清理不必要的文件==========================="
-find "${FDIP_DIR}" -type f -name '*-*-*.txt' ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
-
-# 清空或创建空的 sg.txt 文件
-> $SG_FILE
-
+# 4. 读取 all.txt 并查询归属地，保留 SG（新加坡）的IP地址到 sg.txt
 echo "=========================筛选国家代码为SG的IP地址=========================="
 while IFS= read -r ip; do
     country_code=$(curl -s "https://ipapi.co/$ip/country/" | tr -d '[:space:]')
     if [ "$country_code" == "SG" ]; then
-        echo $ip >> $SG_FILE
+        echo $ip >> "${CFST_DIR}/sg.txt"
     fi
-done < "${FDIP_DIR}/all_unique.txt"
+done < "${FDIP_DIR}/all.txt"
 
-# 输出 sg.txt 文件中的内容，用于调试
-echo "SG IPs:"
-cat $SG_FILE
+# 5. 删除 FDIP 文件夹中除了 all.txt 文件之外的所有文件
+echo "===========================清理不必要的文件==========================="
+find "${FDIP_DIR}" -type f ! -name 'all.txt' -delete
 
-echo "============================开始测速并筛选==============================="
-# 下载 CloudflareSpeedTest
-if [ ! -f "${CFST_DIR}/CloudflareST.tar.gz" ]; then
+# 6. 下载 CloudflareST_linux_amd64.tar.gz 文件到 CloudflareST 文件夹
+echo "========================下载和解压CloudflareST========================="
+if [ ! -f "${CFST_DIR}/CloudflareST" ]; then
     echo "CloudflareST文件不存在，开始下载..."
-    wget -O "${CFST_DIR}/CloudflareST.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
-    tar -xzf "${CFST_DIR}/CloudflareST.tar.gz" -C "${CFST_DIR}"
+    wget -O "${CFST_DIR}/CloudflareST_linux_amd64.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
+    tar -xzf "${CFST_DIR}/CloudflareST_linux_amd64.tar.gz" -C "${CFST_DIR}"
     chmod +x "${CFST_DIR}/CloudflareST"
+else
+    echo "CloudflareST文件已存在，跳过下载步骤。"
 fi
 
-# 运行速度测试
+# 7. 执行 CloudflareST 进行测速
 echo "===========================运行 CloudflareSpeedTest ==========================="
-"${CFST_DIR}/CloudflareST" -tp 443 -f $SG_FILE -n 500 -dn 8 -tl 250 -tll 10 -o $OUTPUT_FILE -url $URL
+"${CFST_DIR}/CloudflareST" -tp 443 -f "${CFST_DIR}/sg.txt" -n 500 -dn 5 -tl 250 -tll 10 -o "${CFST_DIR}/sg.csv" -url "$URL"
 
-# 过滤速度高于6 mb/s的IP
-awk -F, 'NR>1 && $7 > 6 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_OUTPUT
-
-echo "测速完成，速度超过6 mb/s的IP地址已保存到sgcs.txt文件中。"
-
-# 删除 txt.zip 文件
-echo "=========================清理下载的txt.zip文件========================="
-rm -f "${SAVE_PATH}"
+# 8. 从 sg.csv 文件中筛选下载速度高于 6 的 IP地址，生成 sgcs.txt
+echo "===========================筛选下载速度高于6的IP地址==========================="
+awk -F, 'NR>1 && $7 > 6 {print $1 "#" $2 "-" $7 "mb/s"}' "${CFST_DIR}/sg.csv" > "${CFST_DIR}/sgcs.txt"
 
 echo "===========================脚本执行完成==========================="
