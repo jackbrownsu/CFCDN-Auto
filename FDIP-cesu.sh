@@ -2,13 +2,13 @@ export LANG=zh_CN.UTF-8
 # 选择代理，不能拉取依赖或拉取依赖慢时用https://dl.houyitfg.icu/proxy/
 proxy="https://dl.houyitfg.icu/proxy/"
 # 先择域（31898和45102）都要就留空
-asn="45102"
+asn=""
 # 端口，都要就留空
-port=""
+port="443"
 # 是否验证反代并保留纯净IP，true，false
 scip="true"
 # 识别后的结果文件夹名称
-IP="IPDQ"
+IP="FDIP"
 ###################################################################################################
 # 检查并安装依赖
 # 选择客户端 CPU 架构
@@ -101,8 +101,8 @@ fi
 echo ============================开始下载白嫖的反代IP包================================
 # 定义下载链接和保存路径
 download_url="${proxy}https://zip.baipiao.eu.org/"
-save_path="/root/txt.zip"
-extracted_folder="/root/txt"  # 解压后的文件夹路径
+save_path="/txt.zip"
+extracted_folder="/FDIP-TXT"  # 解压后的文件夹路径
 ###################################################################################################
 # 定义最大尝试次数
 max_attempts=10
