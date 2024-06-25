@@ -22,7 +22,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y curl jq geoip-bin mmdb-bin
+      run: sudo apt-get update && sudo apt-get install -y curl && sudo apt-get install -y bash
 
     - name: Run shell script
       run: |
@@ -32,4 +32,4 @@ jobs:
     - name: Commit results
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: "Add filtered SG IPs with speed > 8mb/s"
+        commit_message: "Add SG fdIPs with speed > 6mb/s"
