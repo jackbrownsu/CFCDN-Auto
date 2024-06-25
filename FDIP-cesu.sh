@@ -44,35 +44,38 @@ echo "============================开始下载白嫖的反代IP包==============
 download_url="https://zip.baipiao.eu.org/"
 save_path="${FDIP_DIR}/txt.zip"
 
-# 尝试下载并解压文件
+# 尝试下载文件
 for attempt in {1..10}; do
-    wget "${download_url}" -O "$save_path" && break || echo "下载尝试 $attempt 失败。"
+    wget "${download_url}" -O $save_path && break || echo "下载尝试 $attempt 失败。"
 done
 
-rm -rf "$FDIP_DIR"/*.txt
-unzip "$save_path" -d "$FDIP_DIR"
-sleep 1
+# 解压txt.zip文件
+unzip $save_path -d $FDIP_DIR
 
-echo "===============================合并反代IP文件==============================="
-temp_file="${FDIP_DIR}/FDIPtemp.txt"
-cat "${FDIP_DIR}"/*"${port}".txt > "$temp_file"
+# 删除除了45102-1-443.txt和31898-1-443.txt之外的所有文件
+find "${FDIP_DIR}" -type f ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
 
-echo "===============================IP去重==============================="
-awk '!seen[$0]++' "$temp_file" > "${FDIP_DIR}/FDIPtemp_unique.txt"
+# 合并文件并去重
+cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
+awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
-# 删除已下载的txt.zip及其解压出来的txt文件
-rm -rf $extracted_folder $save_path
+# 删除已下载的txt.zip文件
+rm $save_path
 
 echo "=========================筛选国家代码为SG的IP地址=========================="
 sg_file="${FDIP_DIR}/sg.txt"
-> $sg_file
+> $sg_file  # 清空或创建空的sg.txt文件
 
 while IFS= read -r ip; do
     country_code=$(mmdblookup --file "${CFST_DIR}/Country.mmdb" --ip $ip country iso_code | awk -F '"' '{print $2}')
     if [ "$country_code" == "SG" ]; then
         echo $ip >> $sg_file
     fi
-done < $temp_file
+done < "${FDIP_DIR}/all_unique.txt"
+
+# 输出sg.txt文件中的内容，用于调试
+echo "SG IPs:"
+cat $sg_file
 
 ########################## 开始测速并过滤 ##########################
 OUTPUT_FILE="${FDIP_DIR}/SG443FD.csv"
@@ -93,8 +96,8 @@ fi
 # 运行速度测试
 "${CFST_DIR}/CloudflareST" -tp 443 -f $sg_file -n 500 -dn 8 -tl 250 -tll 10 -o $OUTPUT_FILE -url $URL
 
-# 过滤速度高于8ms/s的IP
-awk -F, 'NR>1 && $7 > 8 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_OUTPUT
+# 过滤速度高于8m/s的IP
+awk -F, 'NR>1 && $7 > 8 {print $1 "#" $2 "-" $7 "m/s"}' "$OUTPUT_FILE" > "${FDIP_DIR}/sgcs.txt"
 
 # 提交最终的txt文件到仓库中
 git add $FINAL_OUTPUT
