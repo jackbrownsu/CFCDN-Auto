@@ -43,7 +43,11 @@ fi
 # 解压 txt.zip 文件并保留只有45102-1-443.txt和31898-1-443.txt，删除其他文件
 echo "===============================解压和合并文件==============================="
 unzip "${SAVE_PATH}" -d "${FDIP_DIR}"
+
+# 删除除了45102-1-443.txt和31898-1-443.txt之外的所有文件
 find "${FDIP_DIR}" -type f ! \( -name '45102-1-443.txt' -o -name '31898-1-443.txt' \) -delete
+
+# 合并文件
 cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
@@ -64,7 +68,7 @@ cat $SG_FILE
 
 echo "============================开始测速并筛选==============================="
 # 下载 CloudflareSpeedTest
-if [ ! -f "${CFST_DIR}/CloudflareST" ]; then
+if [ ! -f "${CFST_DIR}/CloudflareST.tar.gz" ]; then
     echo "CloudflareST文件不存在，开始下载..."
     wget -O "${CFST_DIR}/CloudflareST.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
     tar -xzf "${CFST_DIR}/CloudflareST.tar.gz" -C "${CFST_DIR}"
