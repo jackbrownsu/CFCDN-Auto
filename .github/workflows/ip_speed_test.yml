@@ -2,6 +2,8 @@ name: IP Speed Test
 
 on:
   workflow_dispatch: # 添加手动触发
+  #schedule:
+  #  - cron: '0 0/6 * * *'  # 每6小时运行一次，可以根据需求调整
 
 jobs:
   ip-speed-test:
