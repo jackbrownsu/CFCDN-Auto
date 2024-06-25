@@ -40,9 +40,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 解压 txt.zip 文件并合并文件
+# 解压 txt.zip 文件并保留只有45102-1-443.txt和31898-1-443.txt，删除其他文件
 echo "===============================解压和合并文件==============================="
 unzip "${SAVE_PATH}" -d "${FDIP_DIR}"
+rm -f "${FDIP_DIR}/"!(45102-1-443.txt|31898-1-443.txt)
 cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 awk '!seen[$0]++' "${FDIP_DIR}/all.txt" > "${FDIP_DIR}/all_unique.txt"
 
@@ -73,7 +74,7 @@ fi
 # 运行速度测试
 "${CFST_DIR}/CloudflareST" -tp 443 -f $SG_FILE -n 500 -dn 8 -tl 250 -tll 10 -o $OUTPUT_FILE -url $URL
 
-# 过滤速度高于8 mb/s的IP
-awk -F, 'NR>1 && $7 > 8 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_OUTPUT
+# 过滤速度高于6 mb/s的IP
+awk -F, 'NR>1 && $7 > 6 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_OUTPUT
 
-echo "测速完成，速度超过8 mb/s的IP地址已保存到sgcs.txt文件中。"
+echo "测速完成，速度超过6 mb/s的IP地址已保存到sgcs.txt文件中。"
