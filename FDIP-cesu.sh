@@ -50,6 +50,10 @@ unzip "${SAVE_PATH}" -d "${FDIPALL_DIR}"
 cp "${FDIPALL_DIR}/45102-1-443.txt" "${FDIP_DIR}/45102-1-443.txt"
 cp "${FDIPALL_DIR}/31898-1-443.txt" "${FDIP_DIR}/31898-1-443.txt"
 
+# 删除整个 FDIPALL 目录
+echo "===========================清理临时文件夹 FDIPALL==========================="
+rm -rf "${FDIPALL_DIR}"
+
 # 清空或创建空的 sg.txt 文件
 > $SG_FILE
 
@@ -75,6 +79,7 @@ if [ ! -f "${CFST_DIR}/CloudflareST.tar.gz" ]; then
 fi
 
 # 运行速度测试
+echo "===========================运行 CloudflareSpeedTest ==========================="
 "${CFST_DIR}/CloudflareST" -tp 443 -f $SG_FILE -n 500 -dn 8 -tl 250 -tll 10 -o $OUTPUT_FILE -url $URL
 
 # 过滤速度高于6 mb/s的IP
@@ -82,6 +87,8 @@ awk -F, 'NR>1 && $7 > 6 {print $1 "#" $2 "-" $7 "mb/s"}' $OUTPUT_FILE > $FINAL_O
 
 echo "测速完成，速度超过6 mb/s的IP地址已保存到sgcs.txt文件中。"
 
-# 删除临时文件夹 FDIPALL 和 txt.zip 文件
-rm -rf "${FDIPALL_DIR}"
+# 删除 txt.zip 文件
+echo "=========================清理下载的txt.zip文件========================="
 rm -f "${SAVE_PATH}"
+
+echo "===========================脚本执行完成==========================="
