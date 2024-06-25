@@ -31,7 +31,10 @@ jobs:
         chmod +x FDIP-cesu.sh
         ./FDIP-cesu.sh
 
-    - name: Commit results
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: "Add SG fdIPs with speed > 6mb/s"
+    - name: Commit and push results
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add CloudflareST/sgcs.txt
+        git commit -m "Add SG fdIPs with speed > 6mb/s"
+        git push
