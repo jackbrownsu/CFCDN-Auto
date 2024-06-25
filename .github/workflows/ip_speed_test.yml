@@ -1,0 +1,38 @@
+name: IP Speed Test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # 添加手动触发
+
+jobs:
+  ip-speed-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y curl jq geoip-bin mmdb-bin
+
+    - name: Run shell script
+      run: |
+        chmod +x FDIP-cesu.sh
+        ./FDIP-cesu.sh
+
+    - name: Commit results
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "Add filtered SG IPs with speed > 8mb/s"
