@@ -1,9 +1,6 @@
 name: IP Speed Test
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch: # 添加手动触发
 
 jobs:
