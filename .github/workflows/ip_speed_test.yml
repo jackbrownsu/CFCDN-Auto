@@ -1,4 +1,4 @@
-name: IP Speed Test
+name: SGIP Speed Test
 
 on:
   #workflow_dispatch:  # 手动触发
