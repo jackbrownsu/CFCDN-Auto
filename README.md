@@ -27,15 +27,29 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
 5. 配置`github actions`脚本`yx_ips.yml`实现每12小时更新一次`yx_ips.txt`文件
 
+## FDIP-cesu.sh功能
+
+1. 从`白嫖哥的反代ip库`下载数据包 [下载地址](https://zip.baipiao.eu.org/)
+
+2. 对ip库进行删选，只保留`45102-1-443.txt`和`31898-1-443.txt`，然后合并、去重，对合并后的IP进行归属地查询，只保留归属为`新加坡`的IP地址
+
+4. 对筛选出的新加坡反代IP进行测速，测速工具为`CloudflareST`
+
+6. 保留下载速度高于`6mb/s`的ip，写入到`sgcs.txt`文件中
+
+7. 每6小时自动运行一次
+
 ## sgfd_ips.py功能
 
 1. 从<https://raw.githubusercontent.com/ymyuuu/IPDB/main/bestproxy.txt>获取ip地址，[项目地址](https://github.com/ymyuuu/IPDB)
 
 2. 筛选其中归属地为`SG`的ip，并按照`IP#SG`的格式写入`sgfd_ips.txt`文件中
 
-3. 将获取到的IP地址更新到cf的子域名dns记录中（先清空再更新，不影响根域名）
+3. 把`sgcs.txt`文件中的IP地址按照`IP#SG`的格式追加到`sgfd_ips.txt`文件中
 
-4. 配置`github actions`脚本`sgfd_ips.yml`实现每6小时更新一次`sgfd_ips.txt`文件
+4. 将获取到的IP地址更新到cf的子域名dns记录中（先清空再更新，不影响根域名）
+
+5. 配置`github actions`脚本`sgfd_ips.yml`实现每6小时更新一次`sgfd_ips.txt`文件
 
 ## Github Actions的部署方式
 
@@ -70,3 +84,6 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 [CM项目地址](https://github.com/cmliu/edgetunnel)  
 
 [CM订阅器地址](https://github.com/cmliu/WorkerVless2sub)  
+
+[测速工具CloudflareST](https://github.com/XIU2/CloudflareSpeedTest)
+
