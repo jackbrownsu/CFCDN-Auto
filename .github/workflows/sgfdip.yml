@@ -1,7 +1,7 @@
 name: Update Singapore IPs
 
 on:
-  #workflow_dispatch:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 2,8,14,20 * *'  # 每6小时运行一次，可以根据需求调整
 
