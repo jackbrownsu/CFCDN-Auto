@@ -9,15 +9,21 @@ CF_DNS_NAME = os.getenv('CF_DNS_NAME')
 FILE_PATH = 'sgfd_ips.txt'
 SGCS_FILE_PATH = 'CloudflareST/sgcs.txt'
 
-# 第一步：从URL获取IP数据
+# 第一步：从URL和本地文件获取IP数据
 def get_ip_data():
     url1 = 'https://raw.githubusercontent.com/ymyuuu/IPDB/main/bestproxy.txt'
 
     response1 = requests.get(url1)
     ip_list1 = response1.text.splitlines()
 
+    # 从本地文件获取IP数据
+    ip_list2 = []
+    if os.path.exists(SGCS_FILE_PATH):
+        with open(SGCS_FILE_PATH, 'r') as f:
+            ip_list2 = f.read().splitlines()
+
     # 合并IP地址列表
-    ip_list = ip_list1
+    ip_list = ip_list1 + ip_list2
     return ip_list
 
 # 第二步：过滤新加坡IP地址，并格式化为IP#SG的形式
@@ -33,28 +39,22 @@ def filter_and_format_ips(ip_list):
             print(f"Error processing IP {ip}: {e}")
     return singapore_ips
 
+# 新步骤：去除重复的IP地址
+def remove_duplicate_ips(ip_addresses):
+    seen_ips = set()
+    unique_ips = []
+    for ip in ip_addresses:
+        ip_base = ip.split('#')[0]
+        if ip_base not in seen_ips:
+            seen_ips.add(ip_base)
+            unique_ips.append(ip)
+    return unique_ips
+
 # 第三步：将格式化后的新加坡IP地址写入到sgfd_ips.txt文件
 def write_to_file(ip_addresses):
     with open(FILE_PATH, 'w') as f:
         for ip in ip_addresses:
             f.write(ip + '\n')
-
-# 追加CloudflareST/sgcs.txt文件中的IP地址到sgfd_ips.txt
-def append_sgcs_ips():
-    try:
-        if os.path.exists(SGCS_FILE_PATH) and os.path.getsize(SGCS_FILE_PATH) > 0:
-            with open(SGCS_FILE_PATH, 'r') as f:
-                sgcs_ips = f.readlines()
-            
-            with open(FILE_PATH, 'a') as f:
-                for ip in sgcs_ips:
-                    ip = ip.strip()
-                    if ip:  # 确保不写入空行
-                        f.write(f"{ip}#SG\n")
-        else:
-            print("sgcs.txt is empty or does not exist. Skipping this step.")
-    except Exception as e:
-        print(f"Error appending IPs from sgcs.txt: {e}")
 
 # 第四步：清除指定Cloudflare域名的所有DNS记录
 def clear_dns_records():
@@ -106,16 +106,16 @@ def main():
     # 第二步：过滤并格式化新加坡IP地址
     singapore_ips = filter_and_format_ips(ip_list)
 
+    # 新步骤：去除重复的IP地址
+    unique_singapore_ips = remove_duplicate_ips(singapore_ips)
+
     # 如果没有找到符合条件的新加坡IP，则不执行任何操作
-    if not singapore_ips:
+    if not unique_singapore_ips:
         print("No Singapore IPs found. Keeping existing sgfd_ips.txt file.")
         return
 
     # 第三步：将格式化后的新加坡IP地址写入文件
-    write_to_file(singapore_ips)
-
-    # 追加CloudflareST/sgcs.txt文件中的IP地址
-    append_sgcs_ips()
+    write_to_file(unique_singapore_ips)
 
     # 第四步：清除指定Cloudflare域名的所有DNS记录
     clear_dns_records()
