@@ -30,11 +30,18 @@ jobs:
           CF_DNS_NAME: ${{ secrets.CF_DNS_NAME }}
         run: python sgfdip.py
 
-      - name: Commit and push changes to repository
+      - name: Configure Git
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
+
+      - name: Pull latest changes
+        run: |
           git pull origin main
+
+      - name: Commit and push changes to repository
+        run: |
           git add sgfd_ips.txt
-          git commit -m "Update sgfd_ips.txt with new Singapore IPs"
-          git push origin main --force
+          git commit -m "Update sgfd_ips.txt" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin main
