@@ -1,4 +1,4 @@
-name: Update Singapore IPs
+name: Update Singapore IPs and DNS
 
 on:
   workflow_dispatch:
