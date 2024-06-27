@@ -31,10 +31,12 @@ jobs:
         run: python sgfdip.py
 
       - name: Commit and push changes to repository
-        if: success()
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add sgfd_ips.txt
-          git commit -m "Update sgfd_ips.txt with new Singapore IPs"
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git add sgfd_ips.txt
+            git commit -m "Update sgfd_ips.txt with new Singapore IPs"
+            git push
+          else
+            echo "No changes to commit"
