@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
 
@@ -34,6 +34,7 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
+          git pull origin main
           git add sgfd_ips.txt
           git commit -m "Update sgfd_ips.txt with new Singapore IPs"
-          git push
+          git push origin main --force
