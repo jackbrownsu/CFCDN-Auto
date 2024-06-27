@@ -1,6 +1,5 @@
 import requests
 import os
-import geoip2.database
 
 # 配置
 CF_API_KEY = os.getenv('CF_API_KEY')
