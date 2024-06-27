@@ -8,10 +8,7 @@ CF_ZONE_YID = os.getenv('CF_ZONE_YID')
 CF_DNS_NAME = os.getenv('CF_DNS_NAME')
 FILE_PATH = 'sgfd_ips.txt'
 SGCS_FILE_PATH = 'CloudflareST/sgcs.txt'
-GEOIP_DATABASE_PATH = 'GeoLite2-Country.mmdb'
-
-# 创建MaxMind GeoIP2数据库的Reader对象
-reader = geoip2.database.Reader(GEOIP_DATABASE_PATH)
+IPINFO_API = 568895973bafba
 
 # 第一步：从URL和本地文件获取IP数据
 def get_ip_data():
@@ -40,26 +37,15 @@ def clean_ip_data(ip_list):
             cleaned_ips.append(ip)
     return cleaned_ips
 
-# 辅助函数：检查IP地址的有效性
-def is_valid_ip(ip):
-    try:
-        if ':' in ip:
-            import ipaddress
-            ipaddress.IPv6Address(ip)  # 检查IPv6地址有效性
-        else:
-            import socket
-            socket.inet_aton(ip)  # 检查IPv4地址有效性
-        return True
-    except (socket.error, ipaddress.AddressValueError):
-        return False
-
-# 第二步：过滤并格式化新加坡IP地址
+# 第二步：过滤新加坡IP地址，并格式化为IP#SG的形式
 def filter_and_format_ips(ip_list):
     singapore_ips = []
     for ip in ip_list:
+        ip = ip.split('#')[0]  # 再次确保去除速度信息
         try:
-            response = reader.country(ip)
-            if response.country.iso_code == 'SG':
+            response = requests.get(f"https://ipinfo.io/{ip}?token={IPINFO_API}")
+            data = response.json()
+            if data.get('country') == 'SG':
                 singapore_ips.append(f"{ip}#SG")
         except Exception as e:
             print(f"Error processing IP {ip}: {e}")
