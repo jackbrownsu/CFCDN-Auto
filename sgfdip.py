@@ -38,6 +38,7 @@ def clean_ip_data(ip_list):
 def filter_and_format_ips(ip_list):
     singapore_ips = []
     for ip in ip_list:
+        ip = ip.split('#')[0]  # 再次确保去除速度信息
         try:
             obj = IPWhois(ip)
             results = obj.lookup_rdap()
@@ -111,8 +112,11 @@ def main():
     # 第一步：获取IP数据
     ip_list = get_ip_data()
 
+    # 新步骤：去除IP地址中的速度信息
+    cleaned_ip_list = clean_ip_data(ip_list)
+
     # 第二步：过滤并格式化新加坡IP地址
-    singapore_ips = filter_and_format_ips(ip_list)
+    singapore_ips = filter_and_format_ips(cleaned_ip_list)
 
     # 新步骤：去除重复的IP地址
     unique_singapore_ips = remove_duplicate_ips(singapore_ips)
