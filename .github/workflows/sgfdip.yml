@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -34,9 +34,6 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          if [ -n "$(git status --porcelain)" ]; then
-            git add sgfd_ips.txt
-            git commit -m "Update sgfd_ips.txt with new Singapore IPs"
-            git push
-          else
-            echo "No changes to commit"
+          git add sgfd_ips.txt
+          git commit -m "Update sgfd_ips.txt with new Singapore IPs"
+          git push
