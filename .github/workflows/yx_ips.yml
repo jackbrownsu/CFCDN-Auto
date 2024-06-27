@@ -1,4 +1,4 @@
-name: YX IPs
+name: YX IPs and DNS
 
 on:
   schedule:
