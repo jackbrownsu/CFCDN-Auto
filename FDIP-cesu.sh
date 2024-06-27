@@ -28,7 +28,7 @@ echo "===============================解压txt.zip==============================
 unzip -o "${SAVE_PATH}" -d "${FDIP_DIR}"
 
 # 3. 合并并去重指定的文件
-echo "===============================合并和去重文件==============================="
+echo "==============================合并和去重文件============================="
 #cat "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" | sort -u > "${FDIP_DIR}/all.txt"
 awk '!seen[$0]++' "${FDIP_DIR}/45102-1-443.txt" "${FDIP_DIR}/31898-1-443.txt" > "${FDIP_DIR}/all.txt"
 
@@ -42,11 +42,11 @@ while IFS= read -r ip; do
 done < "${FDIP_DIR}/all.txt"
 
 # 5. 删除 FDIP 文件夹中除了 all.txt 文件之外的所有文件
-echo "===========================清理不必要的文件==========================="
+echo "============================清理不必要的文件============================="
 find "${FDIP_DIR}" -type f ! -name 'all.txt' -delete
 
 # 6. 下载 CloudflareST_linux_amd64.tar.gz 文件到 CloudflareST 文件夹
-echo "========================下载和解压CloudflareST========================="
+echo "=========================下载和解压CloudflareST=========================="
 if [ ! -f "${CFST_DIR}/CloudflareST" ]; then
     echo "CloudflareST文件不存在，开始下载..."
     wget -O "${CFST_DIR}/CloudflareST_linux_amd64.tar.gz" https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
@@ -57,11 +57,11 @@ else
 fi
 
 # 7. 执行 CloudflareST 进行测速
-echo "===========================运行 CloudflareSpeedTest ==========================="
+echo "======================运行 CloudflareSpeedTest ========================="
 "${CFST_DIR}/CloudflareST" -tp 443 -f "${CFST_DIR}/sg.txt" -n 500 -dn 5 -tl 250 -tll 10 -o "${CFST_DIR}/sg.csv" -url "$URL"
 
 # 8. 从 sg.csv 文件中筛选下载速度高于 5 的 IP地址，并删除重复的 IP 地址行，生成 sgcs.txt
-echo "===========================筛选下载速度高于6的IP地址并去重==========================="
+echo "==================筛选下载速度高于 5mb/s 的IP地址并去重===================="
 awk -F, '!seen[$1]++' "${CFST_DIR}/sg.csv" | awk -F, 'NR>1 && $6 > 5 {print $1 "#" $6 "mb/s"}' > "${CFST_DIR}/sgcs.txt"
 
-echo "===========================脚本执行完成==========================="
+echo "===============================脚本执行完成==============================="
