@@ -26,6 +26,14 @@ def get_ip_data():
     ip_list = ip_list1 + ip_list2
     return ip_list
 
+# 新步骤：去除IP地址中的速度信息
+def clean_ip_data(ip_list):
+    cleaned_ips = []
+    for ip in ip_list:
+        cleaned_ip = ip.split('#')[0]  # 去除速度信息，只保留IP地址
+        cleaned_ips.append(cleaned_ip)
+    return cleaned_ips
+
 # 第二步：过滤新加坡IP地址，并格式化为IP#SG的形式
 def filter_and_format_ips(ip_list):
     singapore_ips = []
