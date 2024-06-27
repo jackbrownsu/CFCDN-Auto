@@ -49,6 +49,19 @@ def clean_ip_data(ip_list):
             cleaned_ips.append(ip)
     return cleaned_ips
 
+# 校验IP地址格式
+def is_valid_ip(ip):
+    parts = ip.split('.')
+    if len(parts) != 4:
+        return False
+    for part in parts:
+        try:
+            if not 0 <= int(part) <= 255:
+                return False
+        except ValueError:
+            return False
+    return True
+
 # 第二步：通过ipinfo.io查询新加坡IP地址
 def filter_and_format_ips(ip_list):
     singapore_ips = []
