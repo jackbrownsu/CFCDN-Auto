@@ -6,7 +6,7 @@ https://addressesapi.090227.xyz/ct
 https://addressesapi.090227.xyz/CloudFlareYes  
 https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
-3. 将获取的ip去重，写入到仓库中的`api_ips.txt`文件
+3. 将获取的ip去重，删选其中延迟低于100的数据，写入到仓库中的`api_ips.txt`文件
 
 4. 通过`github actions`脚本`api_ips.yml`实现每12小时更新一次`api_ips.txt`文件
 
