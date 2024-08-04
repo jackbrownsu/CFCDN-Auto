@@ -21,7 +21,7 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
     https://monitor.gacjie.cn/page/cloudflare/ipv4.html  
     https://345673.xyz  
 
-3. 将获取的数据进行筛选、去重，仅保留延迟低于100ms的数据，并在仓库内生成`yx.ips.txt`文件
+3. 将获取的数据进行筛选、去重，按国家命名，并在仓库内生成`yx.ips.txt`文件
 
 4. 从`yx.ips.txt`文件中提取ip地址，自动更新到cf子域名的dns记录中（先清空再更新，不影响根域名）
 
