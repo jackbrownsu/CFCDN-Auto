@@ -1,17 +1,3 @@
-## api_ips.py功能
-
-1. 从四个公开的网页获取ip数据  
-https://addressesapi.090227.xyz/ip.164746.xyz  
-https://addressesapi.090227.xyz/ct  
-https://addressesapi.090227.xyz/CloudFlareYes  
-https://ipdb.api.030101.xyz/?type=bestcf&country=true
-
-3. 将获取的ip去重，删选其中延迟低于100的数据，写入到仓库中的`api_ips.txt`文件
-
-4. 通过`github actions`脚本`api_ips.yml`实现每12小时更新一次`api_ips.txt`文件
-
-5. `api_ips.txt`文件可用于cm大佬的的edge项目中的`ADDAPI`变量
-
 ## yx_ips.py功能
 
 1. 从五个公开的网页抓取ip、线路、延迟数据  
@@ -76,10 +62,7 @@ https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
 但是必须注意：*网页内容必须是可以直接获取ip数据的直链API地址，如果不是，需要解析网页数据结构，比较麻烦。*
 
-**现在，将你的`api_ips.txt`RAW文件地址设置到cm大佬的的edge项目中的`ADDAPI`变量**  
-  如果你创建的是私有库，请看这里：[如何获取私库文件的raw地址](https://github.com/cmliu/CF-Workers-Raw)
-
-**或者，将你已更新DNS的域名设置到cm大佬的的edge项目中的`ADD`变量，享受大佬们的成果吧**
+**将你已更新DNS的域名设置到cm大佬的的edge项目中的`ADD`变量，享受大佬们的成果吧**
 
 [CM项目地址](https://github.com/cmliu/edgetunnel)  
 
