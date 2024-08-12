@@ -61,7 +61,7 @@ echo "======================运行 CloudflareSpeedTest =========================
 "${CFST_DIR}/CloudflareST" -tp 443 -f "${CFST_DIR}/sg.txt" -n 500 -dn 5 -tl 250 -tll 10 -o "${CFST_DIR}/sg.csv" -url "$URL"
 
 # 8. 从 sg.csv 文件中筛选下载速度高于 5 的 IP地址，并删除重复的 IP 地址行，生成 sgcs.txt
-echo "==================筛选下载速度高于 5mb/s 的IP地址并去重===================="
-awk -F, '!seen[$1]++' "${CFST_DIR}/sg.csv" | awk -F, 'NR>1 && $6 > 5 {print $1 "#" $6 "mb/s"}' > "${CFST_DIR}/sgcs.txt"
+echo "==================筛选下载速度高于 10mb/s 的IP地址并去重===================="
+awk -F, '!seen[$1]++' "${CFST_DIR}/sg.csv" | awk -F, 'NR>1 && $6 > 10 {print $1 "#" $6 "mb/s"}' > "${CFST_DIR}/sgcs.txt"
 
 echo "===============================脚本执行完成==============================="
